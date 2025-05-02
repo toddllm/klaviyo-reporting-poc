@@ -186,19 +186,19 @@ This PR adds API edge case documentation and implements version header handling.
 
 ---
 
-## PR 11: Documentation & Release
-**Branch:** feature/documentation
-- [ ] Move call-flow diagram to `docs/img/flow.svg` and reference it in README.
-- [ ] Lint README with `markdownlint`.
+## PR 11: Documentation & Release ✅
+**Branch:** feature/read-start-here-md-and-create-the-next-pr-20250502-172305
+- [x] Move call-flow diagram to `docs/img/flow.svg` and reference it in README.
+- [x] Lint README with `markdownlint`.
 
 **Validation:**
 1. `docs/img/flow.svg` exists and README displays it.
 2. `markdownlint README.md` returns no errors.
 
 **Merge when these checkboxes are green:**
-- [ ] Documentation lint passed.
+- [x] Documentation lint passed.
 
-**Evidence:** Preview link or screenshot of README.
+**Evidence:** PR #26 merged on May 2, 2025. Added call-flow diagram to docs/img/flow.svg and referenced it in the README. Linted README with markdownlint with no errors.
 
 ---
 
