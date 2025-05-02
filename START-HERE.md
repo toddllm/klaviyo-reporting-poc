@@ -2,7 +2,33 @@
 
 ## Overview
 
-This document provides a step-by-step guide for working with this repository, including how to follow the PR plan, manage branches, and maintain a clean repository.
+This document provides a step-by-step guide for working with this repository, including how to follow the PR plan, manage branches, and maintain a clean repository. All team members should start here to understand the workflow.
+
+## Project Roles and Responsibilities
+
+### Developer Role
+
+As a developer, you are responsible for:
+
+1. Implementing the changes required by the PR plan
+2. Creating PRs that follow the project standards
+3. Updating the PR plan after your PR is merged
+
+### Reviewer Role
+
+As a reviewer, you are responsible for:
+
+1. Verifying that PRs implement all requirements from the PR plan
+2. Checking that validation steps have been completed
+3. Approving PRs that meet all requirements
+
+### Tester Role
+
+As a tester, you are responsible for:
+
+1. Following the validation steps listed in the PR plan
+2. Documenting evidence of successful validation
+3. Updating the PR plan with validation evidence
 
 ## Working Through the PR Plan
 
@@ -11,6 +37,8 @@ We are systematically working through the PR list defined in [GITHUB_PR_PLAN.md]
 ### Steps for Working on a PR
 
 1. **Check the PR Plan**: Review [GITHUB_PR_PLAN.md](docs/GITHUB_PR_PLAN.md) to identify the next PR to work on.
+   - Look for PRs that don't have checkmarks (`[ ]` instead of `[x]`)
+   - Check if there's a specific branch name specified in the PR plan
 
 2. **Create a Branch**: Always create branches from the latest `main`:
    ```bash
@@ -18,8 +46,11 @@ We are systematically working through the PR list defined in [GITHUB_PR_PLAN.md]
    git pull
    git checkout -b feature/your-feature-name
    ```
+   - Use the branch name specified in the PR plan when available
 
 3. **Implement Changes**: Make the necessary changes according to the PR requirements.
+   - Refer to the PR plan for specific requirements
+   - Complete all items listed in the PR description
 
 4. **Commit and Push**: Regularly commit your changes and push to the remote branch:
    ```bash
@@ -29,15 +60,23 @@ We are systematically working through the PR list defined in [GITHUB_PR_PLAN.md]
    ```
 
 5. **Create a PR**: When your changes are ready, create a PR on GitHub:
-   - Title should include the PR number and title from the plan (e.g., "PR 4: Metric Aggregates & Revenue Call")
-   - Description should reference the PR plan
-   - Follow the validation steps listed in the PR plan
+   - Title: Include the PR number and title from the plan (e.g., "PR 4: Metric Aggregates & Revenue Call")
+   - Description: Reference the PR plan with a link to the document
+   - Include a checklist of completed items from the PR plan
+   - Document any evidence required by the validation steps
+
+6. **Validation**: Complete all validation steps listed in the PR plan:
+   - Run any required tests or commands
+   - Document the results as evidence
+   - Update the PR description with the evidence
 
 ## Merging PRs and Branch Cleanup
 
 ### Merging a PR
 
 1. **Review and Approve**: Ensure the PR has been reviewed and approved.
+   - All requirements from the PR plan must be implemented
+   - All validation steps must be completed successfully
 
 2. **Squash and Merge**: When merging, use the "Squash and merge" option on GitHub:
    - This creates a clean, single commit on the main branch
@@ -49,6 +88,16 @@ We are systematically working through the PR list defined in [GITHUB_PR_PLAN.md]
    git pull
    ```
 
+4. **Verify Current Branch**: Confirm that you are now on the main branch:
+   ```bash
+   git branch --show-current
+   ```
+
+5. **Update PR Plan**: Update the PR plan to mark the PR as completed:
+   - Change the checkbox from `[ ]` to `[x]` for all completed items
+   - Add the "Evidence" section with details about the PR merge
+   - Commit and push these changes to main
+
 ### Verifying Branch Deletion
 
 1. **Check Local Branches**: List all local branches to see if the merged branch still exists:
@@ -58,10 +107,16 @@ We are systematically working through the PR list defined in [GITHUB_PR_PLAN.md]
 
 2. **Check Remote Branches**: List all remote branches to see if the merged branch still exists:
    ```bash
+   git fetch --prune
    git branch -r
    ```
 
-3. **Clean Up Branches**: If branches are not automatically deleted, run the cleanup script:
+3. **Delete Local Branch**: If the local branch still exists, delete it:
+   ```bash
+   git branch -D feature/your-feature-name
+   ```
+
+4. **Clean Up Branches**: If other branches are not automatically deleted, run the cleanup script:
    ```bash
    ./scripts/cleanup_branches.sh
    ```
@@ -70,7 +125,7 @@ We are systematically working through the PR list defined in [GITHUB_PR_PLAN.md]
 
 ### Automatic Cleanup
 
-The repository has the "Delete branch on merge" setting enabled, which should automatically delete branches after they are merged via a PR.
+The repository has the "Delete branch on merge" setting enabled, which should automatically delete remote branches after they are merged via a PR.
 
 ### Manual Cleanup
 
@@ -110,9 +165,9 @@ gh pr view <PR-NUMBER>
 ## Next Steps
 
 1. Review the [GITHUB_PR_PLAN.md](docs/GITHUB_PR_PLAN.md) to identify the next PR to work on
-2. Follow the Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
+2. Follow the detailed Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
 3. After completing a PR, update the PR plan to mark it as completed
 
 ---
 
-For more detailed information about the Git workflow, see [docs/git_workflow.md](docs/git_workflow.md).
+For more detailed information about the Git workflow, including role-based instructions and validation processes, see [docs/git_workflow.md](docs/git_workflow.md).

@@ -1,5 +1,27 @@
 # Git Workflow Guidelines
 
+## Role-Based Workflow
+
+### Developer Role
+
+1. Check the [GITHUB_PR_PLAN.md](GITHUB_PR_PLAN.md) to identify the next PR to work on
+2. Create a branch and implement the required changes
+3. Create a PR with proper references to the PR plan
+4. Address review comments
+5. After PR is merged, update the PR plan to mark the PR as completed
+
+### Reviewer Role
+
+1. Review the PR against the requirements in the PR plan
+2. Verify that all validation steps listed in the PR plan are completed
+3. Approve the PR if all requirements are met
+
+### Tester Role
+
+1. Follow the validation steps listed in the PR plan
+2. Document evidence of successful validation
+3. Update the PR plan with the evidence
+
 ## Branch Management
 
 ### Creating a Branch
@@ -10,6 +32,8 @@
    git pull
    git checkout -b feature/your-feature-name
    ```
+
+2. Use the branch naming convention specified in the PR plan when available
 
 ### Working on a Branch
 
@@ -33,7 +57,17 @@
    git push origin feature/your-feature-name
    ```
 
-2. Create a Pull Request on GitHub with a clear title and description.
+2. Create a Pull Request on GitHub with:
+   - Title: Include the PR number and title from the PR plan (e.g., "PR 4: Metric Aggregates & Revenue Call")
+   - Description: Reference the PR plan and describe what was implemented
+   - Include any evidence required by the validation steps
+
+### PR Review Process
+
+1. Reviewers should check that the PR implements all requirements listed in the PR plan
+2. Verify that all validation steps have been completed successfully
+3. Check that the code follows project standards
+4. Approve the PR when all requirements are met
 
 ### Merging a Pull Request
 
@@ -54,18 +88,40 @@
    git branch --show-current
    ```
 
+5. Update the PR plan to mark the PR as completed:
+   - Change the checkbox from `[ ]` to `[x]` for all completed items
+   - Add the "Evidence" section with details about the PR merge
+   - Commit and push these changes to main
+
 ### Cleaning Up Branches
 
-Periodically run the cleanup script to remove merged branches:
+1. After merging a PR, verify that the remote branch was deleted:
+   ```bash
+   git fetch --prune
+   git branch -r
+   ```
 
-```bash
-./scripts/cleanup_branches.sh
-```
+2. Delete the local branch if it still exists:
+   ```bash
+   git branch -D feature/your-feature-name
+   ```
+
+3. Periodically run the cleanup script to remove any remaining merged branches:
+   ```bash
+   ./scripts/cleanup_branches.sh
+   ```
 
 The cleanup script:
 1. Identifies branches that have been merged into main
 2. Excludes branches that have open pull requests
 3. Deletes both local and remote branches after confirmation
+
+## Validation Process
+
+1. Each PR in the PR plan has specific validation steps
+2. Complete all validation steps before merging the PR
+3. Document evidence of successful validation as specified in the PR plan
+4. Update the PR plan with the evidence after merging
 
 ## Repository Settings
 
