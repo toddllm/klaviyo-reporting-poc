@@ -102,3 +102,16 @@ If you encounter API errors:
 - The script reads the API key from a separate file for security
 - No real customer data is used or modified
 - No actual emails are sent to anyone
+
+## Development
+
+⚠️ **IMPORTANT: All developers must follow the GitHub PR Plan** ⚠️
+
+This project follows a structured development process outlined in the [GitHub PR Plan](docs/GITHUB_PR_PLAN.md). Before creating any PRs or making changes, please review this document.
+
+All PRs must:
+1. Reference the PR Plan in the description
+2. Include the PR number and title from the plan in your PR title
+3. Align with one of the items in the plan
+
+Do not create PRs that are not part of the plan without discussing with the team first.

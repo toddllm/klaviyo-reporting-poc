@@ -1,26 +1,62 @@
 # GitHub Pull Request Plan
 
-Break the POC plan into focused PRs with validation steps and evidence placeholders.
+⚠️ **IMPORTANT: ALL DEVELOPERS MUST FOLLOW THIS PLAN** ⚠️
+
+This document outlines the specific PRs that should be created for this project. 
+
+**REQUIRED ACTIONS FOR ALL DEVELOPERS:**
+
+1. **REFERENCE THIS PLAN IN EVERY PR DESCRIPTION** with a link to this document
+2. **INCLUDE THE PR NUMBER AND TITLE FROM THIS PLAN** in your PR title
+3. **ENSURE YOUR PR ALIGNS WITH ONE OF THE ITEMS BELOW**
+
+**DO NOT create PRs that are not part of this plan without discussing with the team first.**
+
+**EXAMPLE PR TITLE:** "PR 3: API Edge Cases & Gotchas"
+
+**EXAMPLE PR DESCRIPTION START:**
+```
+Implements PR #3 from the [GitHub PR Plan](../docs/GITHUB_PR_PLAN.md).
+
+This PR adds API edge case documentation and implements version header handling.
+```
 
 ---
 
-## PR 1: Environment & Config Update
-**Branch:** feature/env-config
-- [ ] Add `SLACK_WEBHOOK_URL` & `LOOKER_REPORT_URL` to `.env.example` and README.
-- [ ] **Also** add defaults in `config.py` so CI tests pass.
+## PR 1: Environment & Config Update ✅
+**Branch:** feature/github-pr-plan-review-20250502-113408
+- [x] Add `SLACK_WEBHOOK_URL` & `LOOKER_REPORT_URL` to `.env.example` and README.
+- [x] **Also** add defaults in `config.py` so CI tests pass.
 
 **Validation:**
 1. Reviewer inspects `.env.example` and `config.py` defaults.
 2. Run `python -m pytest tests/test_config.py` (all tests green).
 
 **Merge when these checkboxes are green:**
-- [ ] Validation steps passed.
+- [x] Validation steps passed.
 
-**Evidence:** Paste screenshot or diff URL here.
+**Evidence:** PR #1 merged on May 2, 2025.
 
 ---
 
-## PR 2: API Edge Cases & Gotchas
+## PR 2: Slack Integration Implementation ✅
+**Branch:** feature/slack-integration-20250502
+- [x] Create `slack_integration.py` for sending reports to Slack
+- [x] Add tests for Slack integration functionality
+- [x] Update README with Slack integration documentation
+
+**Validation:**
+1. Run `python -m pytest tests/test_slack_integration.py` (all tests green).
+2. Verify Slack message formatting in mock mode.
+
+**Merge when these checkboxes are green:**
+- [x] Slack integration tests passed.
+
+**Evidence:** PR #2 merged on May 2, 2025.
+
+---
+
+## PR 3: API Edge Cases & Gotchas
 **Branch:** feature/api-edge-cases
 - [ ] Add **API Edge Cases & Gotchas** section to `POC_plan.md`.
 - [ ] Enrich payloads with `relationships.template` and version header.
@@ -37,7 +73,7 @@ Break the POC plan into focused PRs with validation steps and evidence placehold
 
 ---
 
-## PR 3: Metric Aggregates & Revenue Call
+## PR 4: Metric Aggregates & Revenue Call
 **Branch:** feature/metric-aggregates
 - [ ] Implement `get_metric_id(name)` helper in `fetch_metrics.py`.
 - [ ] Specify UTC in `start_date`/`end_date` (ISO 8601 UTC).
@@ -55,7 +91,7 @@ Break the POC plan into focused PRs with validation steps and evidence placehold
 
 ---
 
-## PR 4: Campaign Creation Script
+## PR 5: Campaign Creation Script
 **Branch:** feature/create-send-campaign
 - [ ] Create `create_send_campaign.py` combining template assignment and send job.
 - [ ] Use correct endpoints, payloads, headers, and add `time.sleep(10)` or poll for `message.status == 'ready'` after template assign.
@@ -71,7 +107,7 @@ Break the POC plan into focused PRs with validation steps and evidence placehold
 
 ---
 
-## PR 5: Profile Seeding & Flags
+## PR 6: Profile Seeding & Flags
 **Branch:** feature/seed-profiles
 - [ ] Ensure `seed_profiles.py` treats HTTP 201 and 202 as OK (idempotent).
 - [ ] Add `--prefix foo@yourtest.tld` flag for deterministic addresses in CI.
@@ -87,7 +123,7 @@ Break the POC plan into focused PRs with validation steps and evidence placehold
 
 ---
 
-## PR 6: Simulate Events Script
+## PR 7: Simulate Events Script
 **Branch:** feature/simulate-events
 - [ ] Rename `simulate_open.py` → `simulate_events.py`.
 - [ ] Ensure payload includes `metric_id` inside `metric` object per API v2025-04-15.
@@ -103,7 +139,7 @@ Break the POC plan into focused PRs with validation steps and evidence placehold
 
 ---
 
-## PR 7: Dashboarding & Sheets Integration
+## PR 8: Dashboarding & Sheets Integration
 **Branch:** feature/dashboard
 - [ ] Update `push_to_sheet.py` to use `worksheet.update(data, value_input_option='RAW')`.
 - [ ] Script named-range via `gspread.utils.set_named_range()`.
@@ -119,8 +155,8 @@ Break the POC plan into focused PRs with validation steps and evidence placehold
 
 ---
 
-## PR 8: AI Insights Enhancements
-**Branch:** feature/ai-insights
+## PR 9: AI Insights Enhancements
+**Branch:** feature/ai-insights-20250502
 - [ ] Enhance `ai_insights.py` prompt per spec.
 - [ ] Include `<meta charset="utf-8">` in `summary.html` header.
 - [ ] Add unit test `pytest -k test_ai_summary` to assert output contains 'Open rate'.
@@ -135,7 +171,7 @@ Break the POC plan into focused PRs with validation steps and evidence placehold
 
 ---
 
-## PR 9: Orchestration & Polling
+## PR 10: Orchestration & Polling
 **Branch:** feature/orchestration
 - [ ] Create `run_poc.sh` with `set -euo pipefail` at top and polling guard.
 
@@ -150,7 +186,7 @@ Break the POC plan into focused PRs with validation steps and evidence placehold
 
 ---
 
-## PR 10: Documentation & Release
+## PR 11: Documentation & Release
 **Branch:** feature/documentation
 - [ ] Move call-flow diagram to `docs/img/flow.svg` and reference it in README.
 - [ ] Lint README with `markdownlint`.
@@ -166,6 +202,6 @@ Break the POC plan into focused PRs with validation steps and evidence placehold
 
 ---
 
-⚠️ **Re-order note:** Merge PR 4 (Campaign Creation) **before** PR 3 (Metric Aggregates).
+⚠️ **Re-order note:** Merge PR 5 (Campaign Creation) **before** PR 4 (Metric Aggregates).
 
 > After each PR merge, assign a tester to follow the **Validation** steps and attach **Evidence**. Once all PRs are merged and validated, the POC is ready for Clara’s live demo. 🚀
