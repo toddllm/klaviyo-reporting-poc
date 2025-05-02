@@ -73,21 +73,21 @@ This PR adds API edge case documentation and implements version header handling.
 
 ---
 
-## PR 4: Metric Aggregates & Revenue Call
+## PR 4: Metric Aggregates & Revenue Call ✅
 **Branch:** feature/metric-aggregates
-- [ ] Implement `get_metric_id(name)` helper in `fetch_metrics.py`.
-- [ ] Specify UTC in `start_date`/`end_date` (ISO 8601 UTC).
-- [ ] Add `start_date`/`end_date` params and separate revenue fetch.
-- [ ] Automate test with `pytest -k test_metric_window`.
+- [x] Implement `get_metric_id(name)` helper in `fetch_metrics.py`.
+- [x] Specify UTC in `start_date`/`end_date` (ISO 8601 UTC).
+- [x] Add `start_date`/`end_date` params and separate revenue fetch.
+- [x] Automate test with `pytest -k test_metric_window`.
 
 **Validation:**
 1. `python fetch_metrics.py --dry-run` shows correct UTC window.
 2. `pytest -k test_metric_window` passes.
 
 **Merge when these checkboxes are green:**
-- [ ] Metric window tests green.
+- [x] Metric window tests green.
 
-**Evidence:** Attach sample `metrics.csv` & `.metric_ids.json`.
+**Evidence:** PR #14 merged on May 2, 2025. Updated datetime handling to use timezone-aware objects and implemented proper metric ID caching with `.metric_ids.json`. All tests pass successfully.
 
 ---
 
