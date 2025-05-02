@@ -14,7 +14,7 @@ This script generates realistic mock data in Klaviyo to power reporting demos, t
 
 - Python 3.6+
 - Required packages: `requests`, `faker`, `python-dotenv` (see requirements.txt)
-- Klaviyo API key (stored in private-api-key.txt)
+- Klaviyo API key (stored in private-api-key.txt or as environment variable)
 
 ## API Version
 
@@ -27,14 +27,35 @@ This script generates realistic mock data in Klaviyo to power reporting demos, t
 pip install -r requirements.txt
 ```
 
+## Environment Variables
+
+Copy `.env.example` to `.env` and update with your values:
+
+```
+KLAVIYO_API_KEY=pk_xxx
+AUDIENCE_ID=YdSN6t
+CAMPAIGN_ID=AbCdEf
+TEMPLATE_ID=WJ3kbV
+NUM_TEST_PROFILES=5
+MODE=mock  # Use 'real' for actual API calls
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR_WEBHOOK
+LOOKER_REPORT_URL=https://datastudio.google.com/reporting/YOUR_REPORT_ID
+```
+
+Alternatively, you can set these as environment variables in your system.
+
 ## Usage
 
-1. Ensure your Klaviyo API key is in `private-api-key.txt` (should start with `pk_`)
+1. Set up your environment variables (either in `.env` file or system environment)
 2. Run the script:
 
 ```bash
 python mock_klaviyo_reporting_data.py
 ```
+
+Alternatively, you can still use the legacy method:
+1. Ensure your Klaviyo API key is in `private-api-key.txt` (should start with `pk_`)
+2. Run the script as above
 
 ## What Gets Created
 

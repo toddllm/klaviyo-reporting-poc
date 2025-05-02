@@ -1,0 +1,24 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file if it exists
+load_dotenv()
+
+# Klaviyo API credentials
+KLAVIYO_API_KEY = os.environ.get('KLAVIYO_API_KEY', 'pk_placeholder')
+
+# Campaign and audience IDs
+AUDIENCE_ID = os.environ.get('AUDIENCE_ID', 'YdSN6t')
+CAMPAIGN_ID = os.environ.get('CAMPAIGN_ID', 'AbCdEf')
+TEMPLATE_ID = os.environ.get('TEMPLATE_ID', 'WJ3kbV')
+
+# Test configuration
+NUM_TEST_PROFILES = int(os.environ.get('NUM_TEST_PROFILES', '5'))
+MODE = os.environ.get('MODE', 'mock')  # Use 'real' for actual API calls
+
+# Integration endpoints
+SLACK_WEBHOOK_URL = os.environ.get('SLACK_WEBHOOK_URL', 'https://hooks.slack.com/services/YOUR_WEBHOOK')
+LOOKER_REPORT_URL = os.environ.get('LOOKER_REPORT_URL', 'https://datastudio.google.com/reporting/YOUR_REPORT_ID')
+
+# API version
+KLAVIYO_API_VERSION = '2025-04-15'
