@@ -6,15 +6,20 @@
 
 1. Check the [GITHUB_PR_PLAN.md](GITHUB_PR_PLAN.md) to identify the next PR to work on
 2. Create a branch and implement the required changes
-3. Create a PR with proper references to the PR plan
-4. Address review comments
-5. After PR is merged, update the PR plan to mark the PR as completed
+3. Write tests for all new functionality and significant changes
+4. Run tests to ensure they pass before creating a PR
+5. Create a PR with proper references to the PR plan
+6. Address review comments
+7. After PR is merged, update the PR plan to mark the PR as completed
 
 ### Reviewer Role
 
 1. Review the PR against the requirements in the PR plan
 2. Verify that all validation steps listed in the PR plan are completed
-3. Approve the PR if all requirements are met
+3. Ensure that tests have been written for all new functionality
+4. Run the tests to verify they pass
+5. Create tests if the PR lacks adequate test coverage
+6. Approve the PR if all requirements are met
 
 ### Tester Role
 
@@ -67,7 +72,10 @@
 1. Reviewers should check that the PR implements all requirements listed in the PR plan
 2. Verify that all validation steps have been completed successfully
 3. Check that the code follows project standards
-4. Approve the PR when all requirements are met
+4. Ensure that tests have been written for all new functionality
+5. Run the tests to verify they pass
+6. Create tests if the PR lacks adequate test coverage
+7. Approve the PR when all requirements are met
 
 ### Merging a Pull Request
 

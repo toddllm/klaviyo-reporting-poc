@@ -11,8 +11,9 @@ This document provides a step-by-step guide for working with this repository, in
 As a developer, you are responsible for:
 
 1. Implementing the changes required by the PR plan
-2. Creating PRs that follow the project standards
-3. Updating the PR plan after your PR is merged
+2. Writing tests for all new functionality and significant changes
+3. Creating PRs that follow the project standards
+4. Updating the PR plan after your PR is merged
 
 ### Reviewer Role
 
@@ -20,7 +21,10 @@ As a reviewer, you are responsible for:
 
 1. Verifying that PRs implement all requirements from the PR plan
 2. Checking that validation steps have been completed
-3. Approving PRs that meet all requirements
+3. Ensuring that tests have been written for all new functionality
+4. Running the tests to verify they pass
+5. Creating tests if the PR lacks adequate test coverage
+6. Approving PRs that meet all requirements
 
 ### Tester Role
 
