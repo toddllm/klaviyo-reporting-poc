@@ -171,18 +171,18 @@ This PR adds API edge case documentation and implements version header handling.
 
 ---
 
-## PR 10: Orchestration & Polling
+## PR 10: Orchestration & Polling ✅
 **Branch:** feature/orchestration
-- [ ] Create `run_poc.sh` with `set -euo pipefail` at top and polling guard.
+- [x] Create `run_poc.sh` with `set -euo pipefail` at top and polling guard.
 
 **Validation:**
 1. Execute `bash run_poc.sh --dry-run` under `MODE=mock`, ensure exit code 0.
 2. Polling logic triggers correctly when metrics not ready.
 
 **Merge when these checkboxes are green:**
-- [ ] Orchestration script validated.
+- [x] Orchestration script validated.
 
-**Evidence:** Console transcript.
+**Evidence:** PR #25 merged on May 2, 2025. Added run_poc.sh with proper error handling and polling guard logic, along with check_metrics_ready.py to support the polling functionality. All validation tests passed successfully.
 
 ---
 
