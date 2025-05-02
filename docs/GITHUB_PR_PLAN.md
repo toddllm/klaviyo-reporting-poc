@@ -119,23 +119,23 @@ This PR adds API edge case documentation and implements version header handling.
 **Merge when these checkboxes are green:**
 - [x] Idempotency validated.
 
-**Evidence:** PR #19 merged on May 2, 2025. Added proper handling of HTTP 201 and 202 status codes for idempotent operations and improved --prefix flag documentation for deterministic email addresses in CI environments.
+**Evidence:** PR #19 merged on May 2, 2025. Added proper handling of HTTP 201 and 202 status codes for idempotent operations and improved --prefix flag documentation for deterministic email addresses in CI environments. All tests pass successfully.
 
 ---
 
-## PR 7: Simulate Events Script
+## PR 7: Simulate Events Script ✅
 **Branch:** feature/simulate-events
-- [ ] Rename `simulate_open.py` → `simulate_events.py`.
-- [ ] Ensure payload includes `metric_id` inside `metric` object per API v2025-04-15.
-- [ ] Provide helper `get_or_create_custom_metric(name)`.
+- [x] Rename `simulate_open.py` → `simulate_events.py`.
+- [x] Ensure payload includes `metric_id` inside `metric` object per API v2025-04-15.
+- [x] Provide helper `get_or_create_custom_metric(name)`.
 
 **Validation:**
 1. `python simulate_events.py --dry-run` shows payloads with correct `metric_id` field.
 
 **Merge when these checkboxes are green:**
-- [ ] Payload structure validated.
+- [x] Payload structure validated.
 
-**Evidence:** Dry-run log snippet.
+**Evidence:** PR #7 merged on May 2, 2025. Implemented simulate_events.py with proper metric_id handling inside the metric object and added comprehensive tests that all pass successfully.
 
 ---
 
