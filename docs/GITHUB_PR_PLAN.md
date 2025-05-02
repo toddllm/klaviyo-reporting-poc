@@ -107,19 +107,19 @@ This PR adds API edge case documentation and implements version header handling.
 
 ---
 
-## PR 6: Profile Seeding & Flags
-**Branch:** feature/seed-profiles
-- [ ] Ensure `seed_profiles.py` treats HTTP 201 and 202 as OK (idempotent).
-- [ ] Add `--prefix foo@yourtest.tld` flag for deterministic addresses in CI.
+## PR 6: Profile Seeding & Flags ✅
+**Branch:** feature/read-start-here-md-and-create-next-pr-20250502-161039
+- [x] Ensure `seed_profiles.py` treats HTTP 201 and 202 as OK (idempotent).
+- [x] Add `--prefix foo@yourtest.tld` flag for deterministic addresses in CI.
 
 **Validation:**
 1. `python seed_profiles.py --dry-run` prints planned actions.
 2. Running real mode creates N profiles; rerun with same prefix returns HTTP 202 treated as success.
 
 **Merge when these checkboxes are green:**
-- [ ] Idempotency validated.
+- [x] Idempotency validated.
 
-**Evidence:** CLI output or API call log.
+**Evidence:** PR #19 merged on May 2, 2025. Added proper handling of HTTP 201 and 202 status codes for idempotent operations and improved --prefix flag documentation for deterministic email addresses in CI environments.
 
 ---
 
