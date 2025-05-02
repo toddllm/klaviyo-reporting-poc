@@ -85,6 +85,14 @@ def fetch_metrics(start_date=None, end_date=None, dry_run=False):
             for row in mock_data:
                 writer.writerow(row)
         
+        # Also save mock metric IDs for reference
+        with open('.metric_ids.json', 'w') as f:
+            json.dump({
+                "Opened Email": "mock-open-id-123",
+                "Clicked Email": "mock-click-id-456",
+                "Placed Order": "mock-revenue-id-789"
+            }, f)
+        
         print(f"Generated mock metrics data in metrics.csv")
         return True
     

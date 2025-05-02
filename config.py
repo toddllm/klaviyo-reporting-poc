@@ -22,3 +22,14 @@ LOOKER_REPORT_URL = os.environ.get('LOOKER_REPORT_URL', 'https://datastudio.goog
 
 # API version
 KLAVIYO_API_VERSION = '2025-04-15'
+
+def get_config():
+    """Return configuration as a dictionary"""
+    return {
+        'KLAVIYO_API_KEY': KLAVIYO_API_KEY,
+        'AUDIENCE_ID': AUDIENCE_ID,
+        'CAMPAIGN_ID': CAMPAIGN_ID,
+        'TEMPLATE_ID': TEMPLATE_ID,
+        'MODE': MODE,
+        'KLAVIYO_API_VERSION': KLAVIYO_API_VERSION
+    }
