@@ -56,20 +56,20 @@ This PR adds API edge case documentation and implements version header handling.
 
 ---
 
-## PR 3: API Edge Cases & Gotchas
+## PR 3: API Edge Cases & Gotchas ✅
 **Branch:** feature/api-edge-cases
-- [ ] Add **API Edge Cases & Gotchas** section to `POC_plan.md`.
-- [ ] Enrich payloads with `relationships.template` and version header.
-- [ ] Document `Klaviyo-Api-Version` header in `docs/api_usage.md` and link from README.
+- [x] Add **API Edge Cases & Gotchas** section to `POC_plan.md`.
+- [x] Enrich payloads with `relationships.template` and version header.
+- [x] Document `Klaviyo-Api-Version` header in `docs/api_usage.md` and link from README.
 
 **Validation:**
 1. `docs/api_usage.md` exists with header docs.
 2. README links to `docs/api_usage.md`.
 
 **Merge when these checkboxes are green:**
-- [ ] Documentation validated.
+- [x] Documentation validated.
 
-**Evidence:** Paste PR diff or screenshot here.
+**Evidence:** PR #4 merged on May 2, 2025. Added API usage guidelines document with version header documentation and updated POC_plan.md with additional API edge cases.
 
 ---
 
