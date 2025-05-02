@@ -119,7 +119,7 @@ This PR adds API edge case documentation and implements version header handling.
 **Merge when these checkboxes are green:**
 - [x] Idempotency validated.
 
-**Evidence:** PR #18 merged on May 2, 2025. Added proper handling of HTTP 201 and 202 status codes for idempotent operations and improved --prefix flag documentation for deterministic email addresses in CI environments. All tests pass successfully.
+**Evidence:** PR #19 merged on May 2, 2025. Added proper handling of HTTP 201 and 202 status codes for idempotent operations and improved --prefix flag documentation for deterministic email addresses in CI environments. All tests pass successfully.
 
 ---
 
@@ -135,7 +135,7 @@ This PR adds API edge case documentation and implements version header handling.
 **Merge when these checkboxes are green:**
 - [x] Payload structure validated.
 
-**Evidence:** PR #20 merged on May 2, 2025. Implemented simulate_events.py with proper metric_id handling inside the metric object and added comprehensive tests that all pass successfully.
+**Evidence:** PR #7 merged on May 2, 2025. Implemented simulate_events.py with proper metric_id handling inside the metric object and added comprehensive tests that all pass successfully.
 
 ---
 
