@@ -123,7 +123,10 @@ def get_metric_id(name, force_refresh=False):
                 pass  # Cache file is invalid, continue to API lookup
     
     # Lookup via API
-    headers = {"Authorization": f"Klaviyo-API-Key {os.environ['KLAVIYO_API_KEY']}"}
+    headers = {
+        "Authorization": f"Klaviyo-API-Key {os.environ['KLAVIYO_API_KEY']}",
+        "Klaviyo-Api-Version": "2025-04-15"
+    }
     response = requests.get(
         "https://a.klaviyo.com/api/metrics/", 
         headers=headers,

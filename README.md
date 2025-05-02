@@ -18,8 +18,11 @@ This script generates realistic mock data in Klaviyo to power reporting demos, t
 
 ## API Version
 
+> ⚠️ **IMPORTANT:** All API requests **must** include the `Klaviyo-Api-Version: 2025-04-15` header
+
 - All scripts use Klaviyo API revision **2025-04-15**
 - See [API Usage Guidelines](docs/api_usage.md) for important information about API versioning and edge cases
+- Missing this header is a common cause of unexpected API behavior and errors
 - TODO: Make API revision an environment variable to simplify future updates
 
 ## Installation

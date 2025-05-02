@@ -66,14 +66,16 @@ LOOKER_REPORT_URL=https://datastudio.google.com/reporting/<REPORT_ID>
   { "data": { "type": "campaign-send-job", "relationships": { "campaign": { "data": { "type": "campaign", "id": "<CAMPAIGN_ID>" } } } } }
   ```
 
+- **Relationships Object Requirement:** ⚠️ The `relationships` object is **required** in many API payloads and is a common source of errors. Always include the full relationships structure as shown in the examples above, even if it seems redundant with information in the attributes. Omitting this structure will result in 400 Bad Request errors that can be difficult to debug.
+
 - **Metric Aggregates:** Numeric `metric_id` is required. Look up IDs via `GET /api/metrics/?filter=equals(name,'<Metric Name>')` and cache results in `.metric_ids.json`.
 
 - **Event Injection:** Only custom events can be injected reliably and will not appear in aggregate metrics. **Option B is load-test only**; default to Option A for POC metrics.
 
 - **Preview vs Full Send:** A preview send logs only under “Email Preview Send.” For aggregate metrics, perform a **full send** (Send Now) to a list (size=1 is fine) and then pause the campaign.
-- **Date Handling:** Always use ISO 8601 UTC format for date parameters (e.g., `2025-05-01` for May 1st, 2025). Explicitly use UTC in your code: `datetime.datetime.utcnow()` instead of `datetime.datetime.now()`.
+- **Date Handling:** Always use ISO 8601 UTC format for date parameters (e.g., `2025-05-01` for May 1st, 2025). Explicitly use UTC in your code: `datetime.datetime.now(UTC)` instead of `datetime.datetime.now()`. Note that `datetime.datetime.utcnow()` is deprecated in newer Python versions.
 
-- **API Version Consistency:** Always include the `Klaviyo-Api-Version: 2025-04-15` header in all API requests to ensure consistent behavior, especially for newer endpoints.
+- **API Version Consistency:** ⚠️ Always include the `Klaviyo-Api-Version: 2025-04-15` header in **all** API requests to ensure consistent behavior, especially for newer endpoints. Missing this header is a common cause of unexpected API behavior and errors.
 ---
 
 ### 4. Profile Creation (`seed_profiles.py`)
