@@ -1,0 +1,177 @@
+
+# Klaviyo Campaign Automation: Object Summary
+
+## 1. List Object: `Mock_Reporting_List`
+
+**Purpose:**
+A list is a collection of profiles (recipients) that you will target with your campaign.
+
+**API Example:**
+```http
+GET /api/lists/?filter=equals(name,'Mock_Reporting_List')
+Headers: Accept: application/vnd.api+json, revision: 2025-04-15
+```
+
+**Sample Response:**
+```json
+{
+  "type": "list",
+  "id": "YdSN6t",
+  "attributes": {
+    "name": "Mock_Reporting_List",
+    "created": "2025-05-01T05:32:59+00:00",
+    "updated": "2025-05-01T05:32:59+00:00",
+    "opt_in_process": "double_opt_in"
+  },
+  "relationships": {
+    "profiles": {
+      "links": {
+        "self": "https://a.klaviyo.com/api/lists/YdSN6t/relationships/profiles/",
+        "related": "https://a.klaviyo.com/api/lists/YdSN6t/profiles/"
+      }
+    },
+    "tags": {
+      "links": {
+        "self": "https://a.klaviyo.com/api/lists/YdSN6t/relationships/tags/",
+        "related": "https://a.klaviyo.com/api/lists/YdSN6t/tags/"
+      }
+    },
+    "flow-triggers": {
+      "links": {
+        "self": "https://a.klaviyo.com/api/lists/YdSN6t/relationships/flow-triggers/",
+        "related": "https://a.klaviyo.com/api/lists/YdSN6t/flow-triggers/"
+      }
+    }
+  },
+  "links": {
+    "self": "https://a.klaviyo.com/api/lists/YdSN6t/"
+  }
+}
+```
+**Key Field:**
+- `id` (e.g., `YdSN6t`): Used as the audience for your campaign.
+
+---
+
+## 2. Template Object: `Mock_Automation_Template`
+
+**Purpose:**
+A template defines the HTML (and optionally text/AMP) content structure for your campaign message.
+
+**API Example:**
+```http
+GET /api/templates/?filter=equals(name,'Mock_Automation_Template')
+Headers: Accept: application/vnd.api+json, revision: 2025-04-15
+```
+
+**Sample Response:**
+```json
+{
+  "type": "template",
+  "id": "WJ3kbV",
+  "attributes": {
+    "name": "Mock_Automation_Template",
+    "editor_type": "CODE",
+    "html": "<html><head></head><body><h1>{{ first_name|default:'Friend' }}, welcome!</h1></body></html>",
+    "text": null,
+    "amp": null,
+    "created": "2025-05-01T14:30:11+00:00",
+    "updated": "2025-05-01T14:30:11+00:00"
+  },
+  "links": {
+    "self": "https://a.klaviyo.com/api/templates/WJ3kbV/"
+  }
+}
+```
+**Key Field:**
+- `id` (e.g., `WJ3kbV`): Used to assign the template to a campaign message.
+
+---
+
+
+## 3. Campaign Message Object
+
+**Purpose:**
+A campaign message is the actual message sent to recipients. It is associated with a campaign and a template.
+
+**API Example:**
+```http
+GET /api/campaigns/01JT645JWWK77F1ZD9KT96R2TV/campaign-messages
+Headers: Accept: application/vnd.api+json, revision: 2025-04-15
+```
+
+**Sample Response:**
+```json
+{
+  "type": "campaign-message",
+  "id": "01JT645JX2YCQZNJVZC5FDY2NE",
+  "attributes": {
+    "definition": {
+      "channel": "email",
+      "label": "Isolated_Campaign_20250501_1031",
+      "content": {
+        "subject": "[ISOLATE TEST] Isolated_Campaign_20250501_1031",
+        "preview_text": "Test campaign with template HTML injected",
+        "from_email": "clara@clarathecoach.com",
+        "from_label": "CTC",
+        "reply_to_email": null,
+        "cc_email": null,
+        "bcc_email": null
+      }
+    },
+    "send_times": [],
+    "created_at": "2025-05-01T14:31:50+00:00",
+    "updated_at": "2025-05-01T14:31:50+00:00"
+  },
+  "relationships": {
+    "campaign": {
+      "data": {
+        "type": "campaign",
+        "id": "01JT645JWWK77F1ZD9KT96R2TV"
+      },
+      "links": {
+        "self": "https://a.klaviyo.com/api/campaign-messages/01JT645JX2YCQZNJVZC5FDY2NE/relationships/campaign/",
+        "related": "https://a.klaviyo.com/api/campaign-messages/01JT645JX2YCQZNJVZC5FDY2NE/campaign/"
+      }
+    },
+    "template": {
+      "data": {
+        "type": "template",
+        "id": "SvVgwT"
+      },
+      "links": {
+        "self": "https://a.klaviyo.com/api/campaign-messages/01JT645JX2YCQZNJVZC5FDY2NE/relationships/template/",
+        "related": "https://a.klaviyo.com/api/campaign-messages/01JT645JX2YCQZNJVZC5FDY2NE/template/"
+      }
+    },
+    "image": {
+      "links": {
+        "self": "https://a.klaviyo.com/api/campaign-messages/01JT645JX2YCQZNJVZC5FDY2NE/relationships/image/",
+        "related": "https://a.klaviyo.com/api/campaign-messages/01JT645JX2YCQZNJVZC5FDY2NE/image/"
+      }
+    }
+  },
+  "links": {
+    "self": "https://a.klaviyo.com/api/campaign-messages/01JT645JX2YCQZNJVZC5FDY2NE/"
+  }
+}
+```
+**Key Fields:**
+- `id`: 01JT645JX2YCQZNJVZC5FDY2NE (unique message ID)
+- `template.id`: SvVgwT — the template currently assigned to this message.
+
+---
+
+
+## How They Connect
+
+1. **List**: You create or fetch a list (`Mock_Reporting_List`) to use as your audience.
+2. **Template**: You create or fetch a template (`Mock_Automation_Template`) containing your HTML.
+3. **Campaign**: You create a campaign, specifying the list as the audience.
+4. **Campaign Message**: Created as part of the campaign, but initially has no template.
+5. **Template Assignment**: You assign the template to the campaign message using the special endpoint.
+
+---
+
+If you want to see the exact JSON returned for any other object or relationship, or want to walk through the creation of a new campaign step-by-step with live API calls, let me know!
+

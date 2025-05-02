@@ -1,0 +1,94 @@
+Here’s a technical reality‑check and an updated plan that removes guess‑work around Klaviyo’s **events** endpoint and tightens the POC scope so Clara sees a working demo quickly.
+
+---
+
+## TL;DR (what changed)
+
+* **You can *only* POST custom events via `/api/events/`**. System metrics such as **Opened Email, Clicked Email, Placed Order** are read‑only and generated internally when Klaviyo actually sends mail.  ([Create Event](https://developers.klaviyo.com/en/v2024-02-15/reference/create_event), [Create Event](https://developers.klaviyo.com/en/v2024-02-15/reference/create_event))  
+* The endpoint **accepts a free‑form metric name**, so you *could* create “Demo Opened Email”, but that won’t raise open/click numbers on a campaign. Those counters come from Klaviyo’s send engine and web‑pixel, not the Events API.  ([Use the Query Metric Aggregates endpoint - Klaviyo Developers](https://developers.klaviyo.com/en/docs/using_the_query_metric_aggregates_endpoint?utm_source=chatgpt.com))  
+* The 2025‑04‑15 revision header you’re already using is correct and required on every new REST call.  ([Create Event - Klaviyo Developers](https://developers.klaviyo.com/en/v2024-02-15/reference/create_event?utm_source=chatgpt.com))  
+* The cleanest proof‑of‑concept therefore is:  
+  1. **Send a real test campaign** to a throw‑away mailbox you control.  
+  2. **Trigger opens/clicks** by opening the email (or fetching the tracking‑pixel URL) and clicking one link.  
+  3. **Query the new “Campaign Metrics” aggregate endpoint** (or the generic Metrics endpoint filtered by `campaign_id`) to pull delivered / opened / clicked / revenue.  ([Use the Query Metric Aggregates endpoint - Klaviyo Developers](https://developers.klaviyo.com/en/docs/using_the_query_metric_aggregates_endpoint?utm_source=chatgpt.com))  
+  4. Push those numbers to CSV/Sheets → Looker → GPT summary.
+
+---
+
+## What to tell the coding agent
+
+```
+### API truths we must respect
+1. POST /api/events/ creates ONLY custom metrics.  It will **not** increment built‑in “Opened Email” or “Clicked Email”.
+2. To simulate opens/clicks you must either:
+   a) Send an actual campaign to a test profile and open it, **or**
+   b) Accept that the counts will remain zero and override them in mock mode.
+3. Use header `revision: 2025-04-15` for *every* call.
+
+### Adjusted tasks
+- Remove `inject_events.py` that tried to post “Opened Email”.  Replace with:
+  * `simulate_open.py` (optional): downloads the tracking‑pixel URL for the test profile after the campaign is sent.
+  * `simulate_click.py` (optional): hits https://trk.klaviyo.com/link/?... for the same profile.
+
+- In `fetch_metrics.py` call:
+  GET /api/metrics/?filter=equals(campaign_id,'{CAMPAIGN_ID}')&metric=open OR click
+  (Refs: Metrics Aggregate & Export docs)
+
+- Keep seeded test profiles and list creation logic (that part is valid).
+
+- Update every request header block:
+  ```
+  headers = {
+      "accept": "application/vnd.api+json",
+      "content-type": "application/vnd.api+json",
+      "revision": "2025-04-15",
+      "Authorization": f"Klaviyo-API-Key {API_KEY}"
+  }
+  ```
+
+- Document that **mock mode** now means:  
+  *Skip the send step, inject a fake JSON payload into `metrics.csv`, then run GPT.*
+
+### POC run order (real mode)
+1. `python seed_profiles.py  --num 1 --real`
+2. Manually create & schedule a campaign in UI (or existing API call) → copy CAMPAIGN_ID
+3. `python simulate_open.py` (hits pixel)  
+   `python simulate_click.py` (hits link)  
+4. Wait ~3 min for Klaviyo to aggregate.
+5. `python fetch_metrics.py  --real`
+6. `python ai_insights.py   --source metrics.csv`
+7. Dashboard auto‑refreshes (Looker uses linked Sheet).
+
+### What Clara will see
+- Looker chart with ≥ 1 open, ≥ 1 click, revenue = 0 (fine for demo).
+- GPT summary in Slack/email: “Open rate 100 %, Click rate 100 % on sample of 1.”
+
+That proves end‑to‑end automation without violating Klaviyo API constraints.
+```
+
+---
+
+## Extra suggestions & corrections
+
+| Area | Revision |
+|------|----------|
+| **Template assignment** | Keep your existing `/campaign-message-assign-template` call – it *is* supported. Just call it **before** creating a send job. |
+| **Send job endpoint** | Use `POST /api/campaign-send-jobs/` with body `{ "data": { "type": "campaign-send-job", "attributes": { "campaign_id": "..." } } }`.  |
+| **Metrics endpoint** | The newer aggregate endpoint is `/api/metric-aggregates/` (filters: `measure=unique`, `metric_id=...`, `filters=[["equals","campaign_id","..."]]`).  ([Use the Query Metric Aggregates endpoint - Klaviyo Developers](https://developers.klaviyo.com/en/docs/using_the_query_metric_aggregates_endpoint?utm_source=chatgpt.com)) |
+| **Event naming** | If you *must* mass‑inject events, create custom metric names (`"Demo Open"`). Make sure your insight script lists both system + custom metrics when summarising. |
+| **Domain sandbox** | Use a disposable domain under your DNS to avoid hurting deliverability; add SPF/DKIM in Klaviyo for that domain so the test send actually leaves the account. |
+
+---
+
+## Next actions for the team
+
+1. **Update scripts per the spec above** – especially header revision & real‑send flow.  
+2. **Spin up a sandbox domain** (`ai‑demo.agencyblueprint.xyz`) and add it as a Klaviyo sender identity.  
+3. **Run the real‑mode demo** with one test recipient and capture screenshots of:  
+   * campaign overview,  
+   * metrics aggregate JSON,  
+   * Looker dashboard,  
+   * GPT summary.  
+4. **Package the demo** (repo + README + Loom) so Clara can replay it and decide on rollout to paying clients.
+
+Once this thin POC wows Clara, we can extend to multi‑client dashboards and schedule fully automated weekly runs.
