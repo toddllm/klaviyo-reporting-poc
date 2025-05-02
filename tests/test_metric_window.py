@@ -3,7 +3,7 @@
 import os
 import json
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from unittest.mock import patch, MagicMock
 
 from fetch_metrics import get_metric_id, fetch_metrics
@@ -88,8 +88,8 @@ def test_metric_window():
             args, kwargs = call
             if "params" in kwargs and "start_date" in kwargs["params"]:
                 # Default start date should be 7 days ago in UTC
-                expected_start = (datetime.utcnow().date() - timedelta(days=7)).isoformat()
-                expected_end = datetime.utcnow().date().isoformat()
+                expected_start = (datetime.now(UTC).date() - timedelta(days=7)).isoformat()
+                expected_end = datetime.now(UTC).date().isoformat()
                 
                 assert kwargs["params"]["start_date"] == expected_start
                 assert kwargs["params"]["end_date"] == expected_end
