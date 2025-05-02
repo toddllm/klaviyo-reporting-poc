@@ -43,6 +43,17 @@
 
 2. After merging, the branch should be automatically deleted on GitHub.
 
+3. Switch back to the main branch and pull the latest changes:
+   ```bash
+   git checkout main
+   git pull
+   ```
+
+4. Verify that you are now on the main branch:
+   ```bash
+   git branch --show-current
+   ```
+
 ### Cleaning Up Branches
 
 Periodically run the cleanup script to remove merged branches:
