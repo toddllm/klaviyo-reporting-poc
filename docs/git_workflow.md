@@ -51,6 +51,11 @@ Periodically run the cleanup script to remove merged branches:
 ./scripts/cleanup_branches.sh
 ```
 
+The cleanup script:
+1. Identifies branches that have been merged into main
+2. Excludes branches that have open pull requests
+3. Deletes both local and remote branches after confirmation
+
 ## Repository Settings
 
 The repository has the following settings enabled:
@@ -65,3 +70,8 @@ If branches are not being automatically deleted after merging:
 1. Ensure you're using the "Squash and merge" option when merging PRs
 2. Check that the "Delete branch on merge" option is enabled in the repository settings
 3. Run the cleanup script to manually delete merged branches
+
+Common issues:
+- If PRs are closed without merging, branches won't be automatically deleted
+- If PRs are merged using methods other than "Squash and merge", the automatic deletion might not work correctly
+- The GitHub API sometimes has delays in processing branch deletions
