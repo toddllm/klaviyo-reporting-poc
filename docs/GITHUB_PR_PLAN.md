@@ -91,19 +91,19 @@ This PR adds API edge case documentation and implements version header handling.
 
 ---
 
-## PR 5: Campaign Creation Script
+## PR 5: Campaign Creation Script ✅
 **Branch:** feature/create-send-campaign
-- [ ] Create `create_send_campaign.py` combining template assignment and send job.
-- [ ] Use correct endpoints, payloads, headers, and add `time.sleep(10)` or poll for `message.status == 'ready'` after template assign.
+- [x] Create `create_send_campaign.py` combining template assignment and send job.
+- [x] Use correct endpoints, payloads, headers, and add `time.sleep(10)` or poll for `message.status == 'ready'` after template assign.
 
 **Validation:**
 1. Run with `--dry-run`, observe logged API requests.
 2. Fetch `GET /api/campaigns/<id>` and assert `status=='ready'` before send job.
 
 **Merge when these checkboxes are green:**
-- [ ] Propagation check passed.
+- [x] Propagation check passed.
 
-**Evidence:** Insert console log snippet or link.
+**Evidence:** PR #5 merged on May 2, 2025. Added create_send_campaign.py with proper template assignment and polling for message.status, along with comprehensive unit tests.
 
 ---
 
