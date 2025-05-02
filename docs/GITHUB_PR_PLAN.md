@@ -155,19 +155,19 @@ This PR adds API edge case documentation and implements version header handling.
 
 ---
 
-## PR 9: AI Insights Enhancements
+## PR 9: AI Insights Enhancements ✅
 **Branch:** feature/ai-insights-20250502
-- [ ] Enhance `ai_insights.py` prompt per spec.
-- [ ] Include `<meta charset="utf-8">` in `summary.html` header.
-- [ ] Add unit test `pytest -k test_ai_summary` to assert output contains 'Open rate'.
+- [x] Enhance `ai_insights.py` prompt per spec.
+- [x] Include `<meta charset="utf-8">` in `summary.html` header.
+- [x] Add unit test `pytest -k test_ai_summary` to assert output contains 'Open rate'.
 
 **Validation:**
 1. Run on sample `metrics.csv`, confirm `summary.html` and test passes.
 
 **Merge when these checkboxes are green:**
-- [ ] AI summary tests passed.
+- [x] AI summary tests passed.
 
-**Evidence:** Paste generated summary and HTML snippet.
+**Evidence:** PR #24 merged on May 2, 2025. Enhanced ai_insights.py with improved prompt, added proper HTML output with meta charset tag, and implemented comprehensive tests that all pass successfully.
 
 ---
 
