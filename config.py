@@ -20,6 +20,11 @@ MODE = os.environ.get('MODE', 'mock')  # Use 'real' for actual API calls
 SLACK_WEBHOOK_URL = os.environ.get('SLACK_WEBHOOK_URL', 'https://hooks.slack.com/services/YOUR_WEBHOOK')
 LOOKER_REPORT_URL = os.environ.get('LOOKER_REPORT_URL', 'https://datastudio.google.com/reporting/YOUR_REPORT_ID')
 
+# Google Sheets configuration
+GOOGLE_SHEET_ID = os.environ.get('GOOGLE_SHEET_ID', 'your_sheet_id_here')
+GOOGLE_SHEET_NAME = os.environ.get('GOOGLE_SHEET_NAME', 'Klaviyo Metrics')
+GOOGLE_SHEET_RANGE_NAME = os.environ.get('GOOGLE_SHEET_RANGE_NAME', 'metrics_data')
+
 # API version
 KLAVIYO_API_VERSION = '2025-04-15'
 
@@ -31,5 +36,8 @@ def get_config():
         'CAMPAIGN_ID': CAMPAIGN_ID,
         'TEMPLATE_ID': TEMPLATE_ID,
         'MODE': MODE,
-        'KLAVIYO_API_VERSION': KLAVIYO_API_VERSION
+        'KLAVIYO_API_VERSION': KLAVIYO_API_VERSION,
+        'GOOGLE_SHEET_ID': GOOGLE_SHEET_ID,
+        'GOOGLE_SHEET_NAME': GOOGLE_SHEET_NAME,
+        'GOOGLE_SHEET_RANGE_NAME': GOOGLE_SHEET_RANGE_NAME
     }
