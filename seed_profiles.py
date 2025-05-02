@@ -6,7 +6,7 @@ import time
 import uuid
 import argparse
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from functools import wraps
 from requests.exceptions import RequestException, HTTPError
 
@@ -45,9 +45,15 @@ def klaviyo_retry(func):
         while True:
             try:
                 resp = func(*args, **kwargs)
-                # raise_for_status converts 4xx / 5xx to HTTPError
+                # 200, 201, 202 are all considered success for upserts/list-subscribe
+                # 200 = already existed/updated
+                # 201 = resource created (first-time profile)
+                # 202 = accepted for async list-subscribe batch
+                if resp.status_code in (200, 201, 202):
+                    return resp  # Success
+                # For other status codes, raise_for_status converts 4xx / 5xx to HTTPError
                 resp.raise_for_status()
-                return resp  # Success
+                return resp  # Success for any other 2xx
             except HTTPError as e:
                 status = e.response.status_code
                 if status == 429:  # Rate limited
@@ -95,7 +101,19 @@ def post_json_api(url, payload, dry_run=False):
 
 
 def random_email(first, last, index, prefix=None):
-    """Generate a random or deterministic email address"""
+    """Generate a random or deterministic email address
+    
+    Args:
+        first (str): First name
+        last (str): Last name
+        index (int): Unique index for the email
+        prefix (str, optional): Prefix for deterministic emails. If it contains '@',
+                              it's treated as 'local@domain' and becomes 'local+index@domain'.
+                              Otherwise, it becomes 'prefix+index@example.com'.
+    
+    Returns:
+        str: Generated email address
+    """
     if prefix:
         if "@" in prefix:
             local, domain = prefix.split("@", 1)
@@ -113,7 +131,7 @@ def random_profile(index, prefix=None):
     last = random.choice(LAST_NAMES)
     email = random_email(first, last, index, prefix)
     total_spent = round(random.uniform(10, 1000), 2)
-    last_purchase = (datetime.utcnow() - timedelta(days=random.randint(1, 120))).isoformat()
+    last_purchase = (datetime.now(UTC) - timedelta(days=random.randint(1, 120))).isoformat()
     favorite = random.choice(CATEGORIES)
     
     return {
@@ -129,7 +147,11 @@ def random_profile(index, prefix=None):
 
 
 def create_and_subscribe_profiles(profiles, dry_run=False):
-    """Create profiles and subscribe them to a list in one API call"""
+    """Create profiles and subscribe them to a list in one API call
+    
+    Returns:
+        tuple: (list of emails, status_code) for summary reporting
+    """
     url = f"{BASE_URL}/lists/{AUDIENCE_ID}/relationships/profiles/"
     
     # Convert profiles to the expected JSON-API format
@@ -142,8 +164,16 @@ def create_and_subscribe_profiles(profiles, dry_run=False):
     
     response = post_json_api(url, payload, dry_run)
     if not dry_run:
-        print(f"Created and subscribed {len(profiles)} profiles to list {AUDIENCE_ID}")
-    return response
+        status_msg = {
+            200: "updated",
+            201: "created",
+            202: "accepted for processing"
+        }.get(response.status_code, "processed")
+        print(f"{status_msg.capitalize()} {len(profiles)} profiles for list {AUDIENCE_ID} (status {response.status_code})")
+    
+    # Return emails and status code for summary reporting
+    emails = [profile["email"] for profile in profiles]
+    return emails, response.status_code
 
 
 def log(message, dry_run=False):
@@ -164,6 +194,8 @@ def main():
     
     # Generate profiles in batches to avoid rate limits
     profiles_created = 0
+    profiles_updated = 0
+    profiles_pending = 0
     batch_profiles = []
     
     for i in range(1, args.num + 1):
@@ -173,15 +205,33 @@ def main():
         # Process in batches
         if len(batch_profiles) >= BATCH_SIZE or i == args.num:
             try:
-                create_and_subscribe_profiles(batch_profiles, args.dry_run)
-                profiles_created += len(batch_profiles)
-                log(f"Progress: {profiles_created}/{args.num} profiles created", args.dry_run)
+                emails, status_code = create_and_subscribe_profiles(batch_profiles, args.dry_run)
+                count = len(batch_profiles)
+                
+                # Track status for summary reporting
+                if status_code == 201:
+                    profiles_created += count
+                elif status_code == 200:
+                    profiles_updated += count
+                elif status_code == 202:
+                    profiles_pending += count
+                
+                log(f"Progress: {profiles_created + profiles_updated + profiles_pending}/{args.num} profiles processed", args.dry_run)
                 batch_profiles = []  # Reset batch
             except Exception as e:
-                log(f"Error creating profiles: {str(e)}", args.dry_run)
+                log(f"Error processing profiles: {str(e)}", args.dry_run)
                 sys.exit(1)
     
-    log(f"Successfully created and subscribed {profiles_created} profiles to list {AUDIENCE_ID}", args.dry_run)
+    # Print summary
+    total = profiles_created + profiles_updated + profiles_pending
+    log(f"Summary: {total} profiles processed for list {AUDIENCE_ID}", args.dry_run)
+    if not args.dry_run:
+        if profiles_created > 0:
+            log(f"  - {profiles_created} new profiles created", args.dry_run)
+        if profiles_updated > 0:
+            log(f"  - {profiles_updated} existing profiles updated", args.dry_run)
+        if profiles_pending > 0:
+            log(f"  - {profiles_pending} profiles accepted for processing", args.dry_run)
 
 
 if __name__ == "__main__":

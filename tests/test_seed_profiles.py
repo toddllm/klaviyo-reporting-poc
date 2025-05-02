@@ -53,9 +53,25 @@ class TestRandomProfile:
 
 
 class TestKlaviyoRetry:
-    def test_retry_decorator_success(self):
-        """Test that the retry decorator returns the response on success"""
+    @pytest.mark.parametrize("status_code", [200, 201, 202])
+    def test_retry_decorator_success_2xx(self, status_code):
+        """Test that the retry decorator returns the response for 200, 201, 202 status codes"""
         mock_response = MagicMock()
+        mock_response.status_code = status_code
+
+        @klaviyo_retry
+        def mock_func():
+            return mock_response
+
+        result = mock_func()
+        assert result == mock_response
+        # raise_for_status should not be called for 200, 201, 202
+        mock_response.raise_for_status.assert_not_called()
+    
+    def test_retry_decorator_other_2xx_success(self):
+        """Test that the retry decorator returns the response for other 2xx status codes"""
+        mock_response = MagicMock()
+        mock_response.status_code = 204  # No Content
         mock_response.raise_for_status.return_value = None
 
         @klaviyo_retry
@@ -64,6 +80,7 @@ class TestKlaviyoRetry:
 
         result = mock_func()
         assert result == mock_response
+        # raise_for_status should be called for other 2xx
         mock_response.raise_for_status.assert_called_once()
 
     def test_retry_decorator_rate_limit(self):
@@ -179,9 +196,17 @@ class TestCreateAndSubscribeProfiles:
     @patch('seed_profiles.post_json_api')
     def test_create_and_subscribe_profiles_dry_run(self, mock_post_json_api):
         """Test create_and_subscribe_profiles in dry run mode"""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post_json_api.return_value = mock_response
+        
         profiles = [{"email": "test@example.com"}]
-        create_and_subscribe_profiles(profiles, dry_run=True)
+        emails, status_code = create_and_subscribe_profiles(profiles, dry_run=True)
 
+        # Check return values
+        assert emails == ["test@example.com"]
+        assert status_code == 200
+        
         mock_post_json_api.assert_called_once()
         args, kwargs = mock_post_json_api.call_args
         # Verify that dry_run was passed to post_json_api
@@ -193,13 +218,26 @@ class TestCreateAndSubscribeProfiles:
         assert args[1]["data"][0]["type"] == "profile"
         assert args[1]["data"][0]["attributes"] == profiles[0]
 
+    @pytest.mark.parametrize("status_code,status_msg", [
+        (200, "updated"),
+        (201, "created"),
+        (202, "accepted for processing")
+    ])
     @patch('seed_profiles.post_json_api')
     @patch('builtins.print')
-    def test_create_and_subscribe_profiles_real_request(self, mock_print, mock_post_json_api):
-        """Test create_and_subscribe_profiles makes a real request"""
+    def test_create_and_subscribe_profiles_real_request(self, mock_print, mock_post_json_api, status_code, status_msg):
+        """Test create_and_subscribe_profiles makes a real request and handles different status codes"""
+        mock_response = MagicMock()
+        mock_response.status_code = status_code
+        mock_post_json_api.return_value = mock_response
+        
         profiles = [{"email": "test@example.com"}]
-        create_and_subscribe_profiles(profiles)
+        emails, returned_status_code = create_and_subscribe_profiles(profiles)
 
+        # Check return values
+        assert emails == ["test@example.com"]
+        assert returned_status_code == status_code
+        
         mock_post_json_api.assert_called_once()
         args, kwargs = mock_post_json_api.call_args
         # Verify that dry_run was not passed or is False
@@ -209,7 +247,12 @@ class TestCreateAndSubscribeProfiles:
         assert len(args[1]["data"]) == 1
         assert args[1]["data"][0]["type"] == "profile"
         assert args[1]["data"][0]["attributes"] == profiles[0]
+        
+        # Verify the print message contains the correct status message
         mock_print.assert_called_once()
+        print_args = mock_print.call_args[0][0]
+        assert status_msg in print_args.lower()
+        assert str(status_code) in print_args
 
 
 class TestMainFunction:
@@ -229,6 +272,9 @@ class TestMainFunction:
 
         # Mock the profile generation
         mock_random_profile.side_effect = lambda i, prefix: {"email": f"test+{i}@example.com"}
+        
+        # Mock the create_and_subscribe_profiles return value
+        mock_create_and_subscribe.return_value = ([f"test+{i}@example.com" for i in range(1, 4)], 201)
 
         # Run the main function
         with patch('builtins.print'):
@@ -263,6 +309,13 @@ class TestMainFunction:
 
         # Mock the profile generation
         mock_random_profile.side_effect = lambda i, prefix: {"email": f"test{i}@example.com"}
+        
+        # Mock the create_and_subscribe_profiles return value
+        # First batch returns 201 (created), second batch returns 200 (updated)
+        mock_create_and_subscribe.side_effect = [
+            ([f"test{i}@example.com" for i in range(1, BATCH_SIZE + 1)], 201),
+            ([f"test{i}@example.com" for i in range(BATCH_SIZE + 1, BATCH_SIZE + 11)], 200)
+        ]
 
         # Run the main function
         with patch('builtins.print'):
@@ -278,3 +331,11 @@ class TestMainFunction:
         # Second batch should have the remaining profiles
         second_call_args = mock_create_and_subscribe.call_args_list[1][0][0]
         assert len(second_call_args) == 10
+        
+    def test_random_profile_with_ci_prefix(self):
+        """Test that random_profile with 'ci' prefix yields deterministic emails"""
+        profile = random_profile(1, prefix="ci")
+        assert profile["email"] == "ci+1@example.com"
+        
+        profile = random_profile(42, prefix="ci")
+        assert profile["email"] == "ci+42@example.com"
