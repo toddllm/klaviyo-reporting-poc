@@ -57,6 +57,16 @@ Alternatively, you can still use the legacy method:
 1. Ensure your Klaviyo API key is in `private-api-key.txt` (should start with `pk_`)
 2. Run the script as above
 
+### Sending Reports to Slack
+
+To send campaign performance reports to Slack:
+
+```bash
+python slack_integration.py
+```
+
+This will format the metrics and insights into a nicely formatted Slack message with links to the Looker Studio dashboard.
+
 ## What Gets Created
 
 1. **List**: `Mock_Reporting_List` with 25 profiles
@@ -68,6 +78,9 @@ Alternatively, you can still use the legacy method:
    - Campaign events: `Email Opened`, `Email Clicked`, `Unsubscribed`
    - Flow events: `Flow Email Sent`, `Flow Email Opened`
    - Purchase events: `Placed Order` with product details
+5. **Integrations**:
+   - Slack notifications with campaign performance metrics
+   - Links to Looker Studio dashboards
 
 ## Notes
 
