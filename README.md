@@ -19,6 +19,7 @@ This script generates realistic mock data in Klaviyo to power reporting demos, t
 ## API Version
 
 - All scripts use Klaviyo API revision **2025-04-15**
+- See [API Usage Guidelines](docs/api_usage.md) for important information about API versioning and edge cases
 - TODO: Make API revision an environment variable to simplify future updates
 
 ## Installation

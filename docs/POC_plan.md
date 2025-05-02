@@ -53,6 +53,8 @@ LOOKER_REPORT_URL=https://datastudio.google.com/reporting/<REPORT_ID>
 
 ### 3. API Edge Cases & Gotchas
 
+> **Note:** For detailed API usage guidelines, see [API Usage Guidelines](api_usage.md)
+
 - **Template Assignment:** Use the documented endpoint `POST /api/campaign-message-assign-template/` with payload:
   ```json
   { "data": { "type": "campaign-message-assign-template", "attributes": { "campaign_id": "<CAMPAIGN_ID>", "template_id": "<TEMPLATE_ID>" }, "relationships": { "template": { "data": { "type": "template", "id": "<TEMPLATE_ID>" } } } } }
@@ -69,7 +71,9 @@ LOOKER_REPORT_URL=https://datastudio.google.com/reporting/<REPORT_ID>
 - **Event Injection:** Only custom events can be injected reliably and will not appear in aggregate metrics. **Option B is load-test only**; default to Option A for POC metrics.
 
 - **Preview vs Full Send:** A preview send logs only under “Email Preview Send.” For aggregate metrics, perform a **full send** (Send Now) to a list (size=1 is fine) and then pause the campaign.
+- **Date Handling:** Always use ISO 8601 UTC format for date parameters (e.g., `2025-05-01` for May 1st, 2025). Explicitly use UTC in your code: `datetime.datetime.utcnow()` instead of `datetime.datetime.now()`.
 
+- **API Version Consistency:** Always include the `Klaviyo-Api-Version: 2025-04-15` header in all API requests to ensure consistent behavior, especially for newer endpoints.
 ---
 
 ### 4. Profile Creation (`seed_profiles.py`)
