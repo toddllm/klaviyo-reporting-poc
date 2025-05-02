@@ -101,6 +101,14 @@
    - Add the "Evidence" section with details about the PR merge
    - Commit and push these changes to main
 
+6. **IMPORTANT**: Clean up branches immediately after every merge:
+   ```bash
+   ./scripts/cleanup_branches.sh
+   ```
+   - This keeps the repository clean and prevents confusion
+   - Do not wait to clean up branches - do it immediately after each merge
+   - This is a critical step that should never be skipped
+
 ### Cleaning Up Branches
 
 1. After merging a PR, verify that the remote branch was deleted:
