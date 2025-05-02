@@ -5,7 +5,7 @@ import json
 import csv
 import requests
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from config import get_config
 
 
@@ -64,9 +64,9 @@ def fetch_metrics(start_date=None, end_date=None, dry_run=False):
     
     # Use UTC dates in ISO 8601 format
     if not start_date:
-        start_date = (datetime.utcnow().date() - timedelta(days=7)).isoformat()
+        start_date = (datetime.now(UTC).date() - timedelta(days=7)).isoformat()
     if not end_date:
-        end_date = datetime.utcnow().date().isoformat()
+        end_date = datetime.now(UTC).date().isoformat()
     
     if dry_run:
         print(f"Would fetch metrics for campaign {campaign_id} from {start_date} to {end_date} (UTC)")
