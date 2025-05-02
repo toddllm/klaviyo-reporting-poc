@@ -37,7 +37,13 @@ CATEGORIES = ["Apparel", "Electronics", "Beauty", "Home", "Toys", "Sports", "Boo
 
 
 def klaviyo_retry(func):
-    """Decorator to handle Klaviyo API rate limits and transient errors with exponential backoff"""
+    """Decorator to handle Klaviyo API rate limits and transient errors with exponential backoff
+    
+    Treats HTTP 200, 201, and 202 as success codes for idempotent operations:
+    - 200: Resource already existed/updated
+    - 201: Resource created (first-time profile)
+    - 202: Request accepted for async processing
+    """
     @wraps(func)
     def wrapper(*args, **kwargs):
         retries = 0
@@ -149,6 +155,9 @@ def random_profile(index, prefix=None):
 def create_and_subscribe_profiles(profiles, dry_run=False):
     """Create profiles and subscribe them to a list in one API call
     
+    This function is idempotent - it treats HTTP 201 (created) and 202 (accepted) 
+    as success codes, allowing for safe retries and CI environments.
+    
     Returns:
         tuple: (list of emails, status_code) for summary reporting
     """
@@ -184,7 +193,7 @@ def log(message, dry_run=False):
 
 def main():
     parser = argparse.ArgumentParser(description="Seed Klaviyo profiles and subscribe to a list")
-    parser.add_argument("--prefix", help="Use prefix@domain for deterministic emails; will generate prefix+<i>@domain")
+    parser.add_argument("--prefix", help="Use prefix@domain for deterministic emails in CI; will generate prefix+<i>@domain")
     parser.add_argument("--num", type=int, default=int(os.environ.get("NUM_TEST_PROFILES", "30")),
                         help="Number of profiles to seed (default: 30)")
     parser.add_argument("--dry-run", action="store_true", help="Print API calls without making them")
