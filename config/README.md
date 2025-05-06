@@ -6,6 +6,28 @@ This directory contains configuration files for visualizing Klaviyo campaign met
 
 This file provides a reference configuration for setting up visualizations in Looker Studio. It is not directly imported into Looker Studio but serves as a guide for manual setup.
 
+## looker_extract_klaviyo.json
+
+This file provides a configuration template for Google's 'Extract Data' connector in Looker Studio. It defines how to extract, transform, and load Klaviyo campaign performance data from BigQuery into a cached dataset for reporting.
+
+### Purpose
+
+The configuration defines:
+
+1. A source BigQuery table containing raw Klaviyo event data
+2. Fields to extract including campaign metrics and dimensions
+3. Filters to limit data to the last 90 days
+4. Aggregation settings to group data by campaign_id and date
+5. Calculated fields for open_rate and click_rate
+6. A destination BigQuery table for the extracted data
+7. Visualization configuration for time series and bar charts
+
+### Implementation
+
+For detailed instructions on how to implement this extract in Looker Studio, see the [Looker Extract Setup Guide](../docs/looker_extract_setup.md).
+
+## test_visualization_stub.json (continued)
+
 ### Purpose
 
 The configuration defines:
