@@ -1,0 +1,172 @@
+{
+  "_comment": "This is a reference configuration for Looker Studio visualizations. It is not directly imported but serves as a guide for manual setup.",
+  "dataSource": {
+    "name": "Klaviyo Campaign Metrics",
+    "type": "FILE_UPLOAD",
+    "fileType": "CSV",
+    "filePath": "mock_looker_dataset.csv"
+  },
+  "fields": {
+    "_comment": "These fields must match the column names in the CSV file. Field types are inferred by Looker Studio but can be manually set.",
+    "date": {
+      "type": "DATE",
+      "description": "Campaign send date (YYYY-MM-DD)"
+    },
+    "campaign_name": {
+      "type": "TEXT",
+      "description": "Name of the email campaign"
+    },
+    "send_time": {
+      "type": "DATETIME",
+      "description": "Exact time the campaign was sent (ISO 8601)"
+    },
+    "open_rate": {
+      "type": "NUMBER",
+      "description": "Percentage of recipients who opened the email (decimal)"
+    },
+    "click_rate": {
+      "type": "NUMBER",
+      "description": "Percentage of recipients who clicked a link (decimal)"
+    },
+    "subject_line": {
+      "type": "TEXT",
+      "description": "Email subject line"
+    },
+    "list_id": {
+      "type": "TEXT",
+      "description": "ID of the recipient list"
+    }
+  },
+  "charts": [
+    {
+      "_comment": "Line chart showing open rate trends over time",
+      "type": "LINE",
+      "title": "Open Rate Over Time",
+      "dimensions": ["date"],
+      "metrics": ["open_rate"],
+      "settings": {
+        "xAxis": {
+          "label": "Date"
+        },
+        "yAxis": {
+          "label": "Open Rate",
+          "format": "PERCENT"
+        },
+        "legend": {
+          "position": "TOP"
+        },
+        "lineStyles": [
+          {
+            "series": "open_rate",
+            "color": "#4285F4",
+            "lineWeight": 2,
+            "pointRadius": 3
+          }
+        ]
+      }
+    },
+    {
+      "_comment": "Bar chart showing click rate by campaign",
+      "type": "BAR",
+      "title": "Click Rate by Campaign",
+      "dimensions": ["campaign_name"],
+      "metrics": ["click_rate"],
+      "settings": {
+        "xAxis": {
+          "label": "Campaign"
+        },
+        "yAxis": {
+          "label": "Click Rate",
+          "format": "PERCENT"
+        },
+        "legend": {
+          "position": "NONE"
+        },
+        "barStyles": [
+          {
+            "series": "click_rate",
+            "color": "#34A853"
+          }
+        ],
+        "orientation": "VERTICAL",
+        "sortByMetric": true,
+        "sortOrder": "DESCENDING"
+      }
+    }
+  ],
+  "filters": [
+    {
+      "_comment": "Date range filter for all charts",
+      "type": "DATE_RANGE",
+      "field": "date",
+      "defaultValues": {
+        "start": "2025-04-01",
+        "end": "2025-06-30"
+      }
+    },
+    {
+      "_comment": "List filter to segment by recipient list",
+      "type": "LIST",
+      "field": "list_id",
+      "allowMultiple": true
+    }
+  ],
+  "layout": {
+    "_comment": "This is a suggested layout for the dashboard",
+    "sections": [
+      {
+        "title": "Campaign Performance Overview",
+        "elements": [
+          {
+            "type": "FILTER_GROUP",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 1
+            }
+          },
+          {
+            "type": "CHART",
+            "chartIndex": 0,
+            "position": {
+              "x": 0,
+              "y": 1,
+              "width": 12,
+              "height": 4
+            }
+          },
+          {
+            "type": "CHART",
+            "chartIndex": 1,
+            "position": {
+              "x": 0,
+              "y": 5,
+              "width": 12,
+              "height": 4
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "implementationNotes": {
+    "_comment": "These notes provide guidance for implementing this configuration in Looker Studio",
+    "steps": [
+      "1. Create a new Looker Studio report",
+      "2. Add a data source by uploading mock_looker_dataset.csv",
+      "3. Verify field types match those specified in the 'fields' section",
+      "4. Add a line chart for 'Open Rate Over Time' using date and open_rate",
+      "5. Add a bar chart for 'Click Rate by Campaign' using campaign_name and click_rate",
+      "6. Add date range and list_id filters",
+      "7. Arrange the charts according to the layout section"
+    ],
+    "fieldRequirements": [
+      "date: Must be in YYYY-MM-DD format",
+      "open_rate: Must be a decimal (e.g., 0.42 for 42%)",
+      "click_rate: Must be a decimal (e.g., 0.18 for 18%)",
+      "campaign_name: Should be unique and descriptive",
+      "list_id: Used for filtering, should be consistent across related campaigns"
+    ]
+  }
+}
