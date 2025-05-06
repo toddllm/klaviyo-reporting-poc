@@ -1,0 +1,38 @@
+[
+  {
+    "id": "campaign_123",
+    "name": "Test Campaign 1",
+    "send_time": "2025-05-01T10:00:00Z",
+    "subject": "Test Subject 1",
+    "open_rate": 0.45,
+    "click_rate": 0.2,
+    "delivered": 100,
+    "opened": 45,
+    "clicked": 20,
+    "revenue": 250.0
+  },
+  {
+    "id": "campaign_456",
+    "name": "Test Campaign 2",
+    "send_time": "2025-05-08T10:00:00Z",
+    "subject": "Test Subject 2",
+    "open_rate": 0.5,
+    "click_rate": 0.25,
+    "delivered": 100,
+    "opened": 45,
+    "clicked": 20,
+    "revenue": 250.0
+  },
+  {
+    "id": "campaign_789",
+    "name": "Test Campaign 3",
+    "send_time": "2025-05-15T10:00:00Z",
+    "subject": "Test Subject 3",
+    "open_rate": 0.55,
+    "click_rate": 0.3,
+    "delivered": 100,
+    "opened": 45,
+    "clicked": 20,
+    "revenue": 250.0
+  }
+]
