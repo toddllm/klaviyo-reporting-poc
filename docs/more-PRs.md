@@ -1,108 +1,136 @@
-# Additional PRs for Narrow Scope POC  
-*(supplements the existing "Narrow Scope POC PR Plan" – begin numbering at 7 to avoid collisions)*  
-
-⚠️ **REMINDER:** Every PR **must** reference this plan in its description and follow the stated validation checklist.  
+# 📦 POC Demo PR Plan (Phase 2)  
+**Goal:** deliver one or more fully‑working proof‑of‑concept demos that pull *live* Klaviyo data (via either Supermetrics or Klaviyo API), load it through our ETL, store the output artifacts, and send an automated summary email through AWS SES using a domain that already exists in our AWS account.  
+**All PRs below extend the original "Narrow Scope POC PR Plan".  Reference that plan URL in every PR description.**
 
 ---
 
-## PR 7: Supermetrics → CSV Pull Script  
-**Branch:** `feature/supermetrics-klaviyo-pull`  
-- [x] Add `src/supermetrics_klaviyo_pull.py` – CLI script that pulls Klaviyo data via Supermetrics API (JSON‐based connector end‑point)  
-- [x] Support auth via `SUPERMETRICS_API_KEY` env var  
-- [x] Accept params: `--start-date`, `--end-date`, `--report-type` (campaign | events)  
-- [x] Write results to `data/supermetrics_raw_YYYYMMDD.json` and optional CSV  
-- [x] Retry & rate‑limit logic per Supermetrics guidelines  
-- [x] Unit tests: `tests/test_supermetrics_klaviyo_pull.py` (mock HTTP responses)  
+### PR 7 (merged separately – no action here)  
+`feature/supermetrics-klaviyo-pull` – **already in flight**
+
+---
+
+## PR 8: Runtime Configuration & Secrets Loader  
+**Branch:** `feature/runtime-config`  
+- [ ] Add `.env.example` file with **all required variables** (see table below)  
+- [ ] Create `src/config.py` to load env vars and expose a typed settings object  
+- [ ] Fail fast with helpful error messages if mandatory vars are missing  
+- [ ] Unit tests in `tests/test_config.py`
 
 **Validation**  
-1. Dev ► Run dry‑run: `python src/supermetrics_klaviyo_pull.py --start-date 2025-05-01 --end-date 2025-05-02 --report-type campaign --dry-run`  
-2. Dev ► Run full fetch; confirm JSON/CSV written with ≥1 row  
-3. Reviewer ► Verify pagination + rate‑limit handling works with mocked 429 response  
-4. Reviewer ► Confirm output schema matches mapper expectations  
-
-**Merge when these checkboxes are green:**
-- [x] All validation steps passed
-- [x] Code follows project style guidelines
-- [x] Unit tests cover key functionality
-
-**Evidence:**
-- PR #45 created on May 6, 2025
-- All tests passing: `pytest tests/test_supermetrics_klaviyo_pull.py`
-- Implementation includes API key authentication, pagination, error handling, and CSV/JSON output
-- Dry run functionality works as expected
+1. `pytest tests/test_config.py` passes  
+2. Running `python -c "import config, pprint; pprint.pprint(config.settings.dict())"` prints populated values when `.env` is present  
 
 ---
 
-## PR 8: BigQuery Loader (Optional Warehouse Path)  
-**Branch:** `feature/bq-loader`  
-- [x] Add `src/bq_loader.py` to load Supermetrics‑generated CSV/JSON into BigQuery table `klaviyo_raw.events`  
-- [x] Use `google-cloud-bigquery` client; creds via service‑account JSON  
-- [x] Schema auto‑detect + partition by `date` column  
-- [x] Add CI step `pytest tests/test_bq_loader.py` with BigQuery emulator (or mock)  
+## PR 9: Live ETL Runner (Supermetrics → Mapper → CSV → S3)  
+**Branch:** `feature/etl-live-supermetrics`  
+- [ ] Extend `etl_runner.py` to accept `--source supermetrics` and call `supermetrics_klaviyo_pull.py`  
+- [ ] Pipe pulled JSON → `lookml_field_mapper.py` → CSV  
+- [ ] Upload final CSV to `s3://$S3_BUCKET/klaviyo_campaign_metrics_{{ds}}.csv`  
+- [ ] Add CLI args for date range (`--start`, `--end`)  
+- [ ] Add integration tests with moto‑mocked S3 (`tests/test_etl_runner_live.py`)  
 
 **Validation**  
-1. Dev ► Load sample file from PR 7 into a local/emulated BQ instance  
-2. Dev ► Query table; ensure row count matches source file  
-3. Reviewer ► Confirm partitioning & clustering flags set  
-4. Reviewer ► Check idempotency (re‑running loader does not duplicate rows)  
-
-**Merge when these checkboxes are green:**
-- [x] All validation steps passed
-- [x] Code follows project style guidelines
-- [x] Unit tests cover key functionality
-
-**Evidence:**
-- PR #46 merged on May 6, 2025
-- All tests passing: `pytest tests/test_bq_loader.py`
-- Implementation includes BigQuery loading for both JSON and CSV files
-- Supports schema auto-detection and partitioning by date column
-- Feature flag `ENABLE_BQ=true` implemented for optional deployment
+1. `pytest -k live` passes using moto  
+2. Manual run with real creds writes file to S3 and prints object URL  
 
 ---
 
-## PR 9: Looker Studio Extract Config (Cached Dataset)  
-**Branch:** `feature/looker-extract-config`  
-- [ ] Add `config/looker_extract_klaviyo.json` – template for Google "Extract Data" connector  
-- [ ] Pre‑filters: last 90 days, aggregate by **Campaign ID** + **Date**  
-- [ ] Document step‑by‑step import instructions in `docs/looker_extract_setup.md`  
-- [ ] Include screenshot placeholders (saved as `/docs/img/…`)  
+## PR 10: AWS SES Bootstrap Script  
+**Branch:** `feature/aws-ses-bootstrap`  
+- [ ] Create `scripts/ses_bootstrap.py`  
+  * Verifies domain (if not already)  
+  * Creates/updates an *SMTP‑enabled* IAM user `ses_poc_sender` (least privilege)  
+  * Sets up sending identity `$SES_SENDER_EMAIL` and DKIM signing on `$SES_DOMAIN`  
+  * Optionally lifts sandbox limitation if credentials allow (skip gracefully otherwise)  
+- [ ] Outputs any required DNS records to stdout for manual confirmation  
+- [ ] Unit tests with `moto` where possible (`tests/test_ses_bootstrap.py`)  
 
 **Validation**  
-1. Dev ► Import JSON into Looker Studio; verify extract created without errors  
-2. Reviewer ► Confirm row count ≤100 MB limit and fields align with mock dataset  
-3. Reviewer ► Ensure doc steps are reproducible on fresh account  
+1. `python scripts/ses_bootstrap.py --dry-run` shows planned actions  
+2. Running without `--dry-run` creates identity and prints "✅ SES ready"  
 
 ---
 
-## PR 10: Data‑Volume Performance Tests  
-**Branch:** `feature/perf-tests`  
-- [x] Create `tests/perf/test_query_limits.py` – measures fetch time & rows for 1‑, 7‑, 30‑day ranges  
-- [x] Use pytest marker `@perf` to exclude from default suite  
-- [x] Output summary CSV `perf_results.csv` (query, rows, seconds, success flag)  
-- [x] Add GitHub Action workflow `ci-perf.yml` (manual trigger) to run perf tests weekly  
+## PR 11: SES Email Sender & Health‑Check  
+**Branch:** `feature/email-summary-sender`  
+- [ ] Add `src/email_sender.py` which:  
+  * Queries yesterday's CSV from S3  
+  * Builds a simple HTML table (campaign, sent, opens, clicks)  
+  * Sends email from `$SES_SENDER_EMAIL` to `$SES_SENDER_EMAIL` (self‑test)  
+- [ ] Include retry/back‑off for throttling (SES 14 TPS default)  
+- [ ] Unit tests with `moto` SES  
 
 **Validation**  
-1. Dev ► Run `pytest -m perf` locally; verify results file produced  
-2. Reviewer ► Check thresholds: 1‑day <60 s, 7‑day <300 s on sample data  
-3. Reviewer ► Confirm CI workflow succeeds and uploads artifact
-
-**Merge when these checkboxes are green:**
-- [x] All validation steps passed
-- [x] Tests are properly marked and isolated
-- [x] CI workflow is correctly configured
-
-**Evidence:**
-- PR #49 created on May 6, 2025
-- Implementation includes performance tests for 1-day, 7-day, and 30-day ranges
-- Tests properly marked with @perf to exclude from default suite
-- CI workflow configured for weekly runs with artifact upload  
+1. `pytest tests/test_email_sender.py` passes  
+2. Manual run sends test email to inbox; email shows table w/ ≥1 row  
 
 ---
 
-## Implementation Notes (for PRs 7–10)  
-* Continue using the directory structure defined in the original plan.  
-* PR 7 output becomes an accepted input path for the existing **ETL Runner** (PR 5) – do **not** refactor ETL yet; just ensure compatibility.  
-* PR 8 is optional in the MVP demo but prepares for scale; gate deployment behind `ENABLE_BQ=true`.  
-* Keep unit tests fast (<5 s each); mark integration/perf tests separately.  
+## PR 12: End‑to‑End Demo Orchestrator  
+**Branch:** `feature/poc-demo-cli`  
+- [ ] Add `src/poc_demo.py` that sequentially runs:  
+  1. **ETL Live Runner** (PR 9) for `--start {{yesterday}} --end {{yesterday}}`  
+  2. **Email Sender** (PR 11) to mail the summary  
+- [ ] Provide `--dry-run` and `--log-level` flags  
+- [ ] Add make target: `make demo`  
+
+**Validation**  
+1. `make demo` completes with "🎉 Demo finished, email sent"  
+2. S3 contains CSV, inbox contains summary email  
 
 ---
+
+## PR 13: Dockerized Demo Environment  
+**Branch:** `feature/docker-demo`  
+- [ ] Add `Dockerfile` (python:3.12-slim) & `docker-compose.yml`  
+- [ ] Image installs dependencies, copies code, expects `.env` mount  
+- [ ] Entrypoint executes `poc_demo.py`  
+- [ ] README update for one‑command demo:  
+  ```bash
+  docker compose --env-file .env up demo
+  ```
+
+**Validation**
+
+1. `docker compose build` succeeds
+2. `docker compose --env-file .env up demo` sends email without local Python install
+
+---
+
+### 🔑 Environment Variables (.env)
+
+| Variable                     | Description                                              |
+| ---------------------------- | -------------------------------------------------------- |
+| **KLAVIYO_API_KEY**        | (Optional) direct Klaviyo API key for fallback scripts   |
+| **SUPERMETRICS_API_KEY**   | Supermetrics API key (Enterprise)                        |
+| **SUPERMETRICS_CLIENT_ID** | Supermetrics workspace/client ID                         |
+| **AWS_ACCESS_KEY_ID**     | IAM user credentials with S3 + SES permissions           |
+| **AWS_SECRET_ACCESS_KEY** | ″                                                        |
+| **AWS_REGION**              | e.g. `us-east-1` (must support SES)                      |
+| **S3_BUCKET**               | Existing or auto‑created bucket for ETL outputs          |
+| **SES_DOMAIN**              | Verified domain in your AWS account (e.g. `example.com`) |
+| **SES_SENDER_EMAIL**       | Email address in the domain to act as sender             |
+| **SES_REPLY_TO**           | (Optional) reply‑to address                              |
+| **DEFAULT_TIMEZONE**        | e.g. `UTC` (overrides Supermetrics default EET)          |
+
+> **NOTE:** If the domain is *not yet verified* in SES, run `scripts/ses_bootstrap.py` first and add the printed DNS records to Route 53. Wait for SES to show "Verified" before sending live emails.
+
+---
+
+### Implementation Order
+
+1. PR 8 – config loader
+2. PR 9 – live ETL
+3. PR 10 – SES bootstrap
+4. PR 11 – email sender
+5. PR 12 – demo orchestrator
+6. PR 13 – dockerization
+
+Each PR must:
+
+* Reference this **POC Demo PR Plan** in the description
+* Include validation checklist in the PR body
+* Pass CI (lint + tests) before merge
+
+Once all PRs are merged, run `make demo` (or Docker command) to showcase an end‑to‑end, live‑data POC demo. 🚀
