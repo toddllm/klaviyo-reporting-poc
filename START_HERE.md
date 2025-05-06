@@ -1,4 +1,6 @@
-# Coding Agent Prompt for Klaviyo Reporting POC
+# Start Here - Klaviyo Reporting POC
+
+This document provides instructions for agents working on the Klaviyo Reporting POC project. When instructed to "read start here md and proceed accordingly", follow the instructions below based on your role.
 
 ## For Coding Agents
 
