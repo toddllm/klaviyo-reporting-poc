@@ -1,0 +1,16 @@
+date,campaign_name,send_time,open_rate,click_rate,subject_line,list_id
+2025-04-01,April Newsletter,2025-04-01T09:00:00Z,0.42,0.18,"April Updates and Promotions",list_123
+2025-04-08,Product Launch,2025-04-08T10:30:00Z,0.51,0.27,"Introducing Our New Product Line",list_123
+2025-04-15,Mid-Month Special,2025-04-15T08:45:00Z,0.38,0.15,"Limited Time Offer: 25% Off",list_123
+2025-04-22,Customer Appreciation,2025-04-22T11:15:00Z,0.47,0.22,"Thank You for Being a Loyal Customer",list_123
+2025-04-29,April Recap,2025-04-29T09:30:00Z,0.44,0.19,"April Highlights and May Preview",list_123
+2025-05-01,May Newsletter,2025-05-01T09:00:00Z,0.45,0.20,"May Updates and Promotions",list_123
+2025-05-08,Spring Sale,2025-05-08T10:30:00Z,0.53,0.29,"Spring Sale: Up to 40% Off",list_123
+2025-05-15,Mid-Month Special,2025-05-15T08:45:00Z,0.39,0.16,"Limited Time Offer: Free Shipping",list_123
+2025-05-22,Customer Feedback,2025-05-22T11:15:00Z,0.48,0.23,"We Value Your Feedback",list_123
+2025-05-29,May Recap,2025-05-29T09:30:00Z,0.46,0.21,"May Highlights and June Preview",list_123
+2025-06-01,June Newsletter,2025-06-01T09:00:00Z,0.44,0.19,"June Updates and Promotions",list_456
+2025-06-08,Summer Sale,2025-06-08T10:30:00Z,0.52,0.28,"Summer Sale: Up to 50% Off",list_456
+2025-06-15,Mid-Month Special,2025-06-15T08:45:00Z,0.40,0.17,"Limited Time Offer: Buy One Get One",list_456
+2025-06-22,Customer Appreciation,2025-06-22T11:15:00Z,0.49,0.24,"Thank You for Being a Loyal Customer",list_456
+2025-06-29,June Recap,2025-06-29T09:30:00Z,0.47,0.22,"June Highlights and July Preview",list_456
