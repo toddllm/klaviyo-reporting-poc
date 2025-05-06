@@ -280,7 +280,7 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 - [x] Unit tests cover key functionality
 
 **Evidence:**
-- PR #45 created on May 6, 2025
+- PR #45 merged on May 6, 2025
 - All tests passing: `pytest tests/test_supermetrics_klaviyo_pull.py`
 - Implementation includes API key authentication, pagination, error handling, and CSV/JSON output
 - Dry run functionality works as expected
