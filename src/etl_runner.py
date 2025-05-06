@@ -7,8 +7,8 @@ import time
 from datetime import datetime
 
 # Import from other modules
-from klaviyo_api_ingest import fetch_all_campaigns, fetch_campaign_metrics
-from lookml_field_mapper import normalize_records
+from src.klaviyo_api_ingest import fetch_all_campaigns, fetch_campaign_metrics
+from src.lookml_field_mapper import normalize_records
 
 # Constants
 DEFAULT_OUTPUT_DIR = "data"
