@@ -17,15 +17,15 @@ REPORT_TYPE_MAP = {
 }
 
 # Configuration
-def get_api_key():
+def get_api_key(dry_run=False):
     api_key = os.getenv("SUPERMETRICS_API_KEY")
-    if not api_key:
+    if not api_key and not dry_run:
         raise ValueError("SUPERMETRICS_API_KEY environment variable not set")
-    return api_key
+    return api_key or "dummy_key_for_dry_run"
 
 # API Functions
 def fetch_data(start_date, end_date, report_type, page_token=None, dry_run=False):
-    api_key = get_api_key()
+    api_key = get_api_key(dry_run)
     ds_id = REPORT_TYPE_MAP.get(report_type)
     if not ds_id:
         raise ValueError(f"Invalid report type: {report_type}. Must be one of {list(REPORT_TYPE_MAP.keys())}")
