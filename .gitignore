@@ -41,3 +41,10 @@ archive/
 campaign_report.csv
 Pipfile
 Pipfile.lock
+Supermetrics_Klaviyo_Recommendation_Report.docx
+app.py
+deploy.sh
+poc_send_and_track.py
+poc_track_metrics.py
+report_campaign_metrics.py
+templates/
