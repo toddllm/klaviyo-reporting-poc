@@ -131,11 +131,11 @@ This PR adds the klaviyo_api_ingest.py script for fetching campaign metrics from
 
 ## PR 5: ETL Runner
 **Branch:** feature/etl-runner
-- [ ] Create `src/etl_runner.py` to integrate fetch → normalize → export
-- [ ] Combine functionality from `klaviyo_api_ingest.py` and `lookml_field_mapper.py`
-- [ ] Implement consistent file output format
-- [ ] Add unit tests in `tests/test_etl_runner.py`
-- [ ] Include support for future Supermetrics integration
+- [x] Create `src/etl_runner.py` to integrate fetch → normalize → export
+- [x] Combine functionality from `klaviyo_api_ingest.py` and `lookml_field_mapper.py`
+- [x] Implement consistent file output format
+- [x] Add unit tests in `tests/test_etl_runner.py`
+- [x] Include support for future Supermetrics integration
 
 **Validation:**
 1. Developer: Run `python src/etl_runner.py --dry-run` to verify end-to-end flow
@@ -144,10 +144,17 @@ This PR adds the klaviyo_api_ingest.py script for fetching campaign metrics from
 4. Reviewer: Confirm output format matches requirements for Looker Studio
 
 **Merge when these checkboxes are green:**
-- [ ] All validation steps passed
-- [ ] Code follows project style guidelines
-- [ ] Unit tests cover key functionality
-- [ ] ETL process handles errors gracefully
+- [x] All validation steps passed
+- [x] Code follows project style guidelines
+- [x] Unit tests cover key functionality
+- [x] ETL process handles errors gracefully
+
+**Evidence:**
+- PR #39 merged on May 6, 2025
+- All tests passing: `pytest tests/test_etl_runner.py`
+- Implementation includes ETL pipeline with extract, transform, and load functions
+- Error handling implemented for each step of the ETL process
+- Support for future Supermetrics integration included
 
 ---
 

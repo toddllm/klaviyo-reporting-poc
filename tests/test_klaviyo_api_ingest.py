@@ -38,8 +38,9 @@ def test_fetch_campaigns_success(mock_get):
     mock_response.raise_for_status.return_value = None
     mock_get.return_value = mock_response
     
-    # Test function
-    campaigns, token = fetch_campaigns(dry_run=False)
+    # Test function with mocked API key
+    with patch.dict(os.environ, {"KLAVIYO_API_KEY": "test_api_key"}):
+        campaigns, token = fetch_campaigns(dry_run=False)
     
     # Assertions
     assert len(campaigns) == 1
@@ -51,8 +52,9 @@ def test_fetch_campaigns_error(mock_get):
     # Mock error response
     mock_get.side_effect = requests.exceptions.RequestException("API Error")
     
-    # Test function
-    campaigns, token = fetch_campaigns(dry_run=False)
+    # Test function with mocked API key
+    with patch.dict(os.environ, {"KLAVIYO_API_KEY": "test_api_key"}):
+        campaigns, token = fetch_campaigns(dry_run=False)
     
     # Assertions
     assert campaigns == []
@@ -92,8 +94,9 @@ def test_fetch_campaign_metrics(mock_get):
     mock_response.raise_for_status.return_value = None
     mock_get.return_value = mock_response
     
-    # Test function
-    metrics = fetch_campaign_metrics("campaign_123", dry_run=False)
+    # Test function with mocked API key
+    with patch.dict(os.environ, {"KLAVIYO_API_KEY": "test_api_key"}):
+        metrics = fetch_campaign_metrics("campaign_123", dry_run=False)
     
     # Assertions
     assert metrics["delivered"] == 100
