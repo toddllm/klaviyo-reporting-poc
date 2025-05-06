@@ -51,7 +51,8 @@ def create_campaign(campaign_name, audience_id, dry_run=False):
     }
     
     if dry_run:
-        log(f"Would create campaign '{campaign_name}' with payload: {json.dumps(payload, indent=2)}", dry_run)
+        # Output payload JSON as single-line for easier parsing
+        log(f"Would create campaign '{campaign_name}' with payload: {json.dumps(payload)}", dry_run)
         return "dry-run-campaign-id"
     
     response = requests.post(url, headers=HEADERS, json=payload)
@@ -102,7 +103,7 @@ def assign_template(message_id, template_id, dry_run=False):
     }
     
     if dry_run:
-        log(f"Would assign template {template_id} to message {message_id} with payload: {json.dumps(payload, indent=2)}", dry_run)
+        log(f"Would assign template {template_id} to message {message_id} with payload: {json.dumps(payload)}", dry_run)
         return True
     
     response = requests.patch(url, headers=HEADERS, json=payload)
@@ -163,7 +164,7 @@ def send_campaign(campaign_id, dry_run=False):
     }
     
     if dry_run:
-        log(f"Would send campaign {campaign_id} with payload: {json.dumps(payload, indent=2)}", dry_run)
+        log(f"Would send campaign {campaign_id} with payload: {json.dumps(payload)}", dry_run)
         return True
     
     response = requests.post(url, headers=HEADERS, json=payload)

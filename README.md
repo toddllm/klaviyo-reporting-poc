@@ -20,6 +20,7 @@ automations, and showcase value to clients.
 ## Requirements
 
 - Python 3.6+
+- Python version managed with `pyenv` (see `.python-version`; Python 3.10.6)
 - Required packages: `requests`, `faker`, `python-dotenv` (see requirements.txt)
 - Klaviyo API key (stored in private-api-key.txt or as environment variable)
 
