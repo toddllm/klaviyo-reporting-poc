@@ -289,10 +289,10 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 
 ## PR 8: BigQuery Loader (Optional Warehouse Path)  
 **Branch:** `feature/bq-loader`  
-- [ ] Add `src/bq_loader.py` to load Supermetrics‐generated CSV/JSON into BigQuery table `klaviyo_raw.events`  
-- [ ] Use `google-cloud-bigquery` client; creds via service‑account JSON  
-- [ ] Schema auto‑detect + partition by `date` column  
-- [ ] Add CI step `pytest tests/test_bq_loader.py` with BigQuery emulator (or mock)  
+- [x] Add `src/bq_loader.py` to load Supermetrics‐generated CSV/JSON into BigQuery table `klaviyo_raw.events`  
+- [x] Use `google-cloud-bigquery` client; creds via service‑account JSON  
+- [x] Schema auto‑detect + partition by `date` column  
+- [x] Add CI step `pytest tests/test_bq_loader.py` with BigQuery emulator (or mock)  
 
 **Validation**  
 1. Dev ► Load sample file from PR 7 into a local/emulated BQ instance  
@@ -301,9 +301,16 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 4. Reviewer ► Check idempotency (re‑running loader does not duplicate rows)  
 
 **Merge when these checkboxes are green:**
-- [ ] All validation steps passed
-- [ ] Code follows project style guidelines
-- [ ] Unit tests cover key functionality
+- [x] All validation steps passed
+- [x] Code follows project style guidelines
+- [x] Unit tests cover key functionality
+
+**Evidence:**
+- PR #46 merged on May 6, 2025
+- All tests passing: `pytest tests/test_bq_loader.py`
+- Implementation includes BigQuery loading for both JSON and CSV files
+- Supports schema auto-detection and partitioning by date column
+- Feature flag `ENABLE_BQ=true` implemented for optional deployment
 
 ---
 
