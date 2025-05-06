@@ -368,8 +368,6 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 ## Implementation Notes (for PRs 7–10)  
 * Continue using the directory structure defined in the original plan.  
 * PR 7 output becomes an accepted input path for the existing **ETL Runner** (PR 5) – do **not** refactor ETL yet; just ensure compatibility.  
-* PR 8 is optional in the MVP demo but prepares for scale; gate deployment behind `ENABLE_BQ=true`.  
-* Keep unit tests fast (<5 s each); mark integration/perf tests separately.
 
 ---
 
@@ -485,12 +483,12 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 
 ### Implementation Order for Phase 3
 
-1. PR 11 – config loader
-2. PR 12 – live ETL
-3. PR 13 – SES bootstrap
-4. PR 14 – email sender
-5. PR 15 – demo orchestrator
-6. PR 16 – dockerization
+1. PR 11 – Runtime Configuration & Secrets Loader
+2. PR 12 – Live ETL Runner (Supermetrics → Mapper → CSV → S3)
+3. PR 13 – AWS SES Bootstrap Script
+4. PR 14 – SES Email Sender & Health‑Check
+5. PR 15 – End‑to‑End Demo Orchestrator
+6. PR 16 – Dockerized Demo Environment
 
 Each PR must:
 
