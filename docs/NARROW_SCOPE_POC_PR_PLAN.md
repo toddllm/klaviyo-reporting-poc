@@ -377,14 +377,26 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 
 ## PR 11: Runtime Configuration & Secrets Loader  
 **Branch:** `feature/runtime-config`  
-- [ ] Add `.env.example` file with **all required variables** (see table below)  
-- [ ] Create `src/config.py` to load env vars and expose a typed settings object  
-- [ ] Fail fast with helpful error messages if mandatory vars are missing  
-- [ ] Unit tests in `tests/test_config.py`
+- [x] Add `.env.example` file with **all required variables** (see table below)  
+- [x] Create `src/config.py` to load env vars and expose a typed settings object  
+- [x] Fail fast with helpful error messages if mandatory vars are missing  
+- [x] Unit tests in `tests/test_config.py`
 
 **Validation**  
 1. `pytest tests/test_config.py` passes  
 2. Running `python -c "import config, pprint; pprint.pprint(config.settings.dict())"` prints populated values when `.env` is present  
+
+**Merge when these checkboxes are green:**
+- [x] All validation steps passed
+- [x] Code follows project style guidelines
+- [x] Unit tests cover key functionality
+
+**Evidence:**
+- PR #50 merged on May 6, 2025
+- All tests passing: `pytest tests/test_config.py`
+- Implementation includes `.env.example` with all required variables
+- `src/config.py` loads env vars and exposes a typed settings object
+- Validation and error handling for missing required variables implemented
 
 ---
 
