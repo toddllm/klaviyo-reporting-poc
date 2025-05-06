@@ -6,7 +6,9 @@
 
 **UPDATE: All PRs for the Narrow Scope POC implementation phase have been completed as of May 6, 2025.**
 
-The Narrow Scope POC has been successfully implemented according to the PR plan defined in [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md). All 6 PRs have been merged and the implementation is now ready for demonstration.
+**NEW: Additional PRs (7-10) have been identified for extending the Narrow Scope POC functionality.**
+
+The Narrow Scope POC has been successfully implemented according to the PR plan defined in [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md). All 6 initial PRs have been merged and the implementation is now ready for demonstration. Four additional PRs (7-10) have been identified to extend the functionality with Supermetrics integration, BigQuery loading, Looker Studio configuration, and performance testing.
 
 ## Overview
 
@@ -176,14 +178,21 @@ gh pr view <PR-NUMBER>
 
 ## Next Steps
 
-1. All PRs in the [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md) have been completed
+1. All initial PRs (1-6) in the [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md) have been completed
 2. The Narrow Scope POC is now ready for demonstration and evaluation
-3. For future development, continue to follow the detailed Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
-4. Any new features or enhancements should be discussed with the team before creating new branches or PRs
+3. Implement the additional PRs (7-10) as defined in the updated [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md):
+   - PR 7: Supermetrics → CSV Pull Script
+   - PR 8: BigQuery Loader (Optional Warehouse Path)
+   - PR 9: Looker Studio Extract Config (Cached Dataset)
+   - PR 10: Data‐Volume Performance Tests
+4. For future development, continue to follow the detailed Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
+5. Any new features or enhancements should be discussed with the team before creating new branches or PRs
 
 ## Narrow Scope POC Overview
 
-The Narrow Scope POC implementation is divided into 6 sequential PRs:
+The Narrow Scope POC implementation is divided into two phases:
+
+### Phase 1: Core Implementation (Completed)
 
 1. **PR 1: Klaviyo API Ingest Script** - Create a script to fetch campaign metrics from the Klaviyo API
 2. **PR 2: LookML Field Mapper** - Normalize Klaviyo fields for Looker Studio
@@ -191,6 +200,13 @@ The Narrow Scope POC implementation is divided into 6 sequential PRs:
 4. **PR 4: Test Visualization Stub** - Create a sample Looker Studio JSON config
 5. **PR 5: ETL Runner** - Integrate fetch → normalize → export
 6. **PR 6: README Updates** - Document the POC pipeline
+
+### Phase 2: Extended Functionality (Planned)
+
+7. **PR 7: Supermetrics → CSV Pull Script** - CLI script to pull Klaviyo data via Supermetrics API
+8. **PR 8: BigQuery Loader** - Load Supermetrics-generated data into BigQuery
+9. **PR 9: Looker Studio Extract Config** - Template for Google "Extract Data" connector
+10. **PR 10: Data‐Volume Performance Tests** - Measure fetch time & rows for various date ranges
 
 Detailed implementation guides for each PR are available in the `docs/` directory:
 
@@ -200,6 +216,8 @@ Detailed implementation guides for each PR are available in the `docs/` director
 - `docs/PR4_IMPLEMENTATION_GUIDE.md`
 - `docs/PR5_IMPLEMENTATION_GUIDE.md`
 - `docs/PR6_IMPLEMENTATION_GUIDE.md`
+
+Implementation details for PRs 7-10 can be found in `docs/more-PRs.md`.
 
 ---
 

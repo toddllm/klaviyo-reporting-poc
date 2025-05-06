@@ -194,30 +194,153 @@ The narrow scope POC should follow this directory structure:
 ├── src/
 │   ├── klaviyo_api_ingest.py
 │   ├── lookml_field_mapper.py
-│   └── etl_runner.py
+│   ├── etl_runner.py
+│   ├── supermetrics_klaviyo_pull.py  # PR 7
+│   └── bq_loader.py                  # PR 8
 ├── tests/
 │   ├── test_klaviyo_api_ingest.py
 │   ├── test_lookml_field_mapper.py
-│   └── test_etl_runner.py
+│   ├── test_etl_runner.py
+│   ├── test_supermetrics_klaviyo_pull.py  # PR 7
+│   ├── test_bq_loader.py                  # PR 8
+│   └── perf/
+│       └── test_query_limits.py           # PR 10
 ├── data/
-│   └── mock_looker_dataset.csv
+│   ├── mock_looker_dataset.csv
+│   └── supermetrics_raw_YYYYMMDD.json     # PR 7 output
 ├── config/
-│   └── test_visualization_stub.json
+│   ├── test_visualization_stub.json
+│   └── looker_extract_klaviyo.json        # PR 9
+├── docs/
+│   └── looker_extract_setup.md            # PR 9
 └── README.md
 ```
 
 ### Implementation Order
 Implement the PRs in the order listed above. Each PR builds on the previous one, so it's important to follow the sequence.
 
+For Phase 2 (PRs 7-10), the recommended implementation order is:
+1. First implement PR 7 (Supermetrics → CSV Pull Script)
+2. Then implement PR 8 (BigQuery Loader) and PR 9 (Looker Studio Extract Config) in parallel
+3. Finally implement PR 10 (Data‑Volume Performance Tests) to validate the complete solution
+
 ### Testing Strategy
+
+#### Phase 1 (PRs 1-6)
 - Unit tests should be included for all Python scripts
 - Mock API responses for testing `klaviyo_api_ingest.py`
 - Test edge cases for field mapping in `lookml_field_mapper.py`
 - Integration tests for `etl_runner.py` to verify end-to-end flow
 
+#### Phase 2 (PRs 7-10)
+- Mock Supermetrics API responses for testing `supermetrics_klaviyo_pull.py`
+- Use BigQuery emulator for testing `bq_loader.py`
+- Separate performance tests with pytest markers to avoid slowing down the regular test suite
+- Implement CI workflow for automated performance testing
+
 ### Documentation
+
+#### Phase 1 (PRs 1-6)
 - Add docstrings to all functions
 - Include examples in README.md
 - Document known limitations and future enhancements
 
+#### Phase 2 (PRs 7-10)
+- Create step-by-step guide for Looker Studio Extract setup
+- Document BigQuery schema and partitioning strategy
+- Include performance test results and recommendations
+- Update main README.md with information about the extended functionality
+
 > After each PR merge, assign a tester to follow the **Validation** steps and attach **Evidence**. Once all PRs are merged and validated, the narrow scope POC is ready for demonstration. 🚀
+
+---
+
+# Phase 2: Extended Functionality
+
+*(The following PRs extend the Narrow Scope POC with additional features)*
+
+## PR 7: Supermetrics → CSV Pull Script  
+**Branch:** `feature/supermetrics-klaviyo-pull`  
+- [ ] Add `src/supermetrics_klaviyo_pull.py` – CLI script that pulls Klaviyo data via Supermetrics API (JSON‐based connector end‑point)  
+- [ ] Support auth via `SUPERMETRICS_API_KEY` env var  
+- [ ] Accept params: `--start-date`, `--end-date`, `--report-type` (campaign | events)  
+- [ ] Write results to `data/supermetrics_raw_YYYYMMDD.json` and optional CSV  
+- [ ] Retry & rate‑limit logic per Supermetrics guidelines  
+- [ ] Unit tests: `tests/test_supermetrics_klaviyo_pull.py` (mock HTTP responses)  
+
+**Validation**  
+1. Dev ► Run dry‑run: `python src/supermetrics_klaviyo_pull.py --start-date 2025-05-01 --end-date 2025-05-02 --report-type campaign --dry-run`  
+2. Dev ► Run full fetch; confirm JSON/CSV written with ≥1 row  
+3. Reviewer ► Verify pagination + rate‑limit handling works with mocked 429 response  
+4. Reviewer ► Confirm output schema matches mapper expectations  
+
+**Merge when these checkboxes are green:**
+- [ ] All validation steps passed
+- [ ] Code follows project style guidelines
+- [ ] Unit tests cover key functionality
+
+---
+
+## PR 8: BigQuery Loader (Optional Warehouse Path)  
+**Branch:** `feature/bq-loader`  
+- [ ] Add `src/bq_loader.py` to load Supermetrics‐generated CSV/JSON into BigQuery table `klaviyo_raw.events`  
+- [ ] Use `google-cloud-bigquery` client; creds via service‑account JSON  
+- [ ] Schema auto‑detect + partition by `date` column  
+- [ ] Add CI step `pytest tests/test_bq_loader.py` with BigQuery emulator (or mock)  
+
+**Validation**  
+1. Dev ► Load sample file from PR 7 into a local/emulated BQ instance  
+2. Dev ► Query table; ensure row count matches source file  
+3. Reviewer ► Confirm partitioning & clustering flags set  
+4. Reviewer ► Check idempotency (re‑running loader does not duplicate rows)  
+
+**Merge when these checkboxes are green:**
+- [ ] All validation steps passed
+- [ ] Code follows project style guidelines
+- [ ] Unit tests cover key functionality
+
+---
+
+## PR 9: Looker Studio Extract Config (Cached Dataset)  
+**Branch:** `feature/looker-extract-config`  
+- [ ] Add `config/looker_extract_klaviyo.json` – template for Google "Extract Data" connector  
+- [ ] Pre‑filters: last 90 days, aggregate by **Campaign ID** + **Date**  
+- [ ] Document step‑by‑step import instructions in `docs/looker_extract_setup.md`  
+- [ ] Include screenshot placeholders (saved as `/docs/img/…`)  
+
+**Validation**  
+1. Dev ► Import JSON into Looker Studio; verify extract created without errors  
+2. Reviewer ► Confirm row count ≤100 MB limit and fields align with mock dataset  
+3. Reviewer ► Ensure doc steps are reproducible on fresh account  
+
+**Merge when these checkboxes are green:**
+- [ ] All validation steps passed
+- [ ] JSON is valid and well-formatted
+- [ ] Documentation is clear and complete
+
+---
+
+## PR 10: Data‑Volume Performance Tests  
+**Branch:** `feature/perf-tests`  
+- [ ] Create `tests/perf/test_query_limits.py` – measures fetch time & rows for 1‑, 7‑, 30‑day ranges  
+- [ ] Use pytest marker `@perf` to exclude from default suite  
+- [ ] Output summary CSV `perf_results.csv` (query, rows, seconds, success flag)  
+- [ ] Add GitHub Action workflow `ci-perf.yml` (manual trigger) to run perf tests weekly  
+
+**Validation**  
+1. Dev ► Run `pytest -m perf` locally; verify results file produced  
+2. Reviewer ► Check thresholds: 1‑day <60 s, 7‑day <300 s on sample data  
+3. Reviewer ► Confirm CI workflow succeeds and uploads artifact  
+
+**Merge when these checkboxes are green:**
+- [ ] All validation steps passed
+- [ ] Tests are properly marked and isolated
+- [ ] CI workflow is correctly configured
+
+---
+
+## Implementation Notes (for PRs 7–10)  
+* Continue using the directory structure defined in the original plan.  
+* PR 7 output becomes an accepted input path for the existing **ETL Runner** (PR 5) – do **not** refactor ETL yet; just ensure compatibility.  
+* PR 8 is optional in the MVP demo but prepares for scale; gate deployment behind `ENABLE_BQ=true`.  
+* Keep unit tests fast (<5 s each); mark integration/perf tests separately.
