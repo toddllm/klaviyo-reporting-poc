@@ -1,0 +1,38 @@
+[
+  {
+    "campaign_id": "campaign_123",
+    "campaign_name": "Test Campaign 1",
+    "send_time": "2025-05-01T10:00:00Z",
+    "subject_line": "Test Subject 1",
+    "open_rate": 0.45,
+    "click_rate": 0.20,
+    "delivered": 1000,
+    "opened": 450,
+    "clicked": 200,
+    "date": "2025-05-01"
+  },
+  {
+    "campaign_id": "campaign_456",
+    "campaign_name": "Test Campaign 2",
+    "send_time": "2025-05-02T10:00:00Z",
+    "subject_line": "Test Subject 2",
+    "open_rate": 0.50,
+    "click_rate": 0.25,
+    "delivered": 800,
+    "opened": 400,
+    "clicked": 200,
+    "date": "2025-05-02"
+  },
+  {
+    "campaign_id": "campaign_789",
+    "campaign_name": "Test Campaign 3",
+    "send_time": "2025-05-03T10:00:00Z",
+    "subject_line": "Test Subject 3",
+    "open_rate": 0.55,
+    "click_rate": 0.30,
+    "delivered": 1200,
+    "opened": 660,
+    "clicked": 360,
+    "date": "2025-05-03"
+  }
+]

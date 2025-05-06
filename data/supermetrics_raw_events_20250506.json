@@ -1,0 +1,38 @@
+[
+  {
+    "event_id": "event_123",
+    "campaign_id": "campaign_123",
+    "event_name": "Open",
+    "event_time": "2025-05-01T12:30:00Z",
+    "email": "user1@example.com",
+    "device": "Mobile",
+    "date": "2025-05-01"
+  },
+  {
+    "event_id": "event_456",
+    "campaign_id": "campaign_123",
+    "event_name": "Click",
+    "event_time": "2025-05-01T12:35:00Z",
+    "email": "user1@example.com",
+    "device": "Mobile",
+    "date": "2025-05-01"
+  },
+  {
+    "event_id": "event_789",
+    "campaign_id": "campaign_456",
+    "event_name": "Open",
+    "event_time": "2025-05-02T14:20:00Z",
+    "email": "user2@example.com",
+    "device": "Desktop",
+    "date": "2025-05-02"
+  },
+  {
+    "event_id": "event_101112",
+    "campaign_id": "campaign_789",
+    "event_name": "Click",
+    "event_time": "2025-05-03T09:15:00Z",
+    "email": "user3@example.com",
+    "device": "Tablet",
+    "date": "2025-05-03"
+  }
+]
