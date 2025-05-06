@@ -20,6 +20,17 @@
 3. Reviewer ► Verify pagination + rate‑limit handling works with mocked 429 response  
 4. Reviewer ► Confirm output schema matches mapper expectations  
 
+**Merge when these checkboxes are green:**
+- [x] All validation steps passed
+- [x] Code follows project style guidelines
+- [x] Unit tests cover key functionality
+
+**Evidence:**
+- PR #45 created on May 6, 2025
+- All tests passing: `pytest tests/test_supermetrics_klaviyo_pull.py`
+- Implementation includes API key authentication, pagination, error handling, and CSV/JSON output
+- Dry run functionality works as expected
+
 ---
 
 ## PR 8: BigQuery Loader (Optional Warehouse Path)  
