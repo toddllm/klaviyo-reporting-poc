@@ -14,7 +14,7 @@ TEMPLATE_ID = os.environ.get('TEMPLATE_ID', 'WJ3kbV')
 
 # Test configuration
 NUM_TEST_PROFILES = int(os.environ.get('NUM_TEST_PROFILES', '5'))
-MODE = os.environ.get('MODE', 'mock')  # Use 'real' for actual API calls
+MODE = os.environ.get('MODE', 'mock')
 
 # Integration endpoints
 SLACK_WEBHOOK_URL = os.environ.get('SLACK_WEBHOOK_URL', 'https://hooks.slack.com/services/YOUR_WEBHOOK')

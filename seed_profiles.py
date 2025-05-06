@@ -100,8 +100,8 @@ def post_json_api(url, payload, dry_run=False):
         "Authorization": f"Klaviyo-API-Key {KLAVIYO_API_KEY}",
         "Revision": KLAVIYO_API_VERSION,
         "Klaviyo-Api-Version": KLAVIYO_API_VERSION,
-        "Content-Type": "application/vnd.api+json",
-        "Accept": "application/vnd.api+json",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
         "Idempotency-Key": str(uuid.uuid4())  # Prevent duplicates on retry
     }
     return requests.post(url, headers=headers, json=payload, timeout=15)
@@ -164,7 +164,7 @@ def create_and_subscribe_profiles(profiles, dry_run=False):
     """
     # Subscribe profiles via JSON:API relationship endpoint for real API testing
     url = f"{BASE_URL}/lists/{AUDIENCE_ID}/relationships/profiles/"
-    data = [{"type": "profile", "id": f"email:{p['email']}"} for p in profiles]
+    data = [{"type": "profile", "id": f"email:{p['email']}", "attributes": p} for p in profiles]
     payload = {"data": data}
     response = post_json_api(url, payload, dry_run)
     if not dry_run:
