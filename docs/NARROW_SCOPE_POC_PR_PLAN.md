@@ -341,10 +341,10 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 
 ## PR 10: Data‑Volume Performance Tests  
 **Branch:** `feature/perf-tests`  
-- [ ] Create `tests/perf/test_query_limits.py` – measures fetch time & rows for 1‑, 7‑, 30‑day ranges  
-- [ ] Use pytest marker `@perf` to exclude from default suite  
-- [ ] Output summary CSV `perf_results.csv` (query, rows, seconds, success flag)  
-- [ ] Add GitHub Action workflow `ci-perf.yml` (manual trigger) to run perf tests weekly  
+- [x] Create `tests/perf/test_query_limits.py` – measures fetch time & rows for 1‑, 7‑, 30‑day ranges  
+- [x] Use pytest marker `@perf` to exclude from default suite  
+- [x] Output summary CSV `perf_results.csv` (query, rows, seconds, success flag)  
+- [x] Add GitHub Action workflow `ci-perf.yml` (manual trigger) to run perf tests weekly  
 
 **Validation**  
 1. Dev ► Run `pytest -m perf` locally; verify results file produced  
@@ -352,9 +352,15 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 3. Reviewer ► Confirm CI workflow succeeds and uploads artifact  
 
 **Merge when these checkboxes are green:**
-- [ ] All validation steps passed
-- [ ] Tests are properly marked and isolated
-- [ ] CI workflow is correctly configured
+- [x] All validation steps passed
+- [x] Tests are properly marked and isolated
+- [x] CI workflow is correctly configured
+
+**Evidence:**
+- PR #49 created on May 6, 2025
+- Implementation includes performance tests for 1-day, 7-day, and 30-day ranges
+- Tests properly marked with @perf to exclude from default suite
+- CI workflow configured for weekly runs with artifact upload
 
 ---
 
