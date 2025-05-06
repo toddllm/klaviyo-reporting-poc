@@ -1,7 +1,6 @@
-# Klaviyo Mock Reporting Data Generator
+# Klaviyo Reporting POC
 
-This script generates realistic mock data in Klaviyo to power reporting demos, test
-automations, and showcase value to clients.
+This repository contains tools for generating realistic mock data in Klaviyo to power reporting demos, test automations, and showcase value to clients. It also includes a narrow scope POC for automating Klaviyo report generation via Looker Studio.
 
 ## Workflow
 
@@ -10,12 +9,11 @@ automations, and showcase value to clients.
 ## Features
 
 - **Mock List Creation**: Creates a test list named `Mock_Reporting_List`
-- **Mock Profile Generation**: Adds 20-30 realistic but fictional profiles to the
-  list
+- **Mock Profile Generation**: Adds 20-30 realistic but fictional profiles to the list
 - **Campaign Activity Simulation**: Simulates events for two mock campaigns
 - **Flow Events Simulation**: Creates a mock welcome flow with message interactions
-- **Purchase Behavior Simulation**: Generates realistic purchase events with product
-  data
+- **Purchase Behavior Simulation**: Generates realistic purchase events with product data
+- **Automated Reporting**: Extracts campaign metrics from Klaviyo API and prepares them for Looker Studio
 
 ## Requirements
 
@@ -23,12 +21,12 @@ automations, and showcase value to clients.
 - Python version managed with `pyenv` (see `.python-version`; Python 3.10.6)
 - Required packages: `requests`, `faker`, `python-dotenv` (see requirements.txt)
 - Klaviyo API key (stored in private-api-key.txt or as environment variable)
+- Looker Studio account (for visualization)
 
 ## API Version
 
 - All scripts use Klaviyo API revision **2025-04-15**
-- See [API Usage Guidelines](docs/api_usage.md) for important information about API
-  versioning and edge cases
+- See [API Usage Guidelines](docs/api_usage.md) for important information about API versioning and edge cases
 - TODO: Make API revision an environment variable to simplify future updates
 
 ## Installation
@@ -54,7 +52,9 @@ LOOKER_REPORT_URL=https://datastudio.google.com/reporting/YOUR_REPORT_ID
 
 Alternatively, you can set these as environment variables in your system.
 
-## Usage
+## Mock Data Generation
+
+### Usage
 
 1. Set up your environment variables (either in `.env` file or system environment)
 2. Run the script:
@@ -76,10 +76,9 @@ To send campaign performance reports to Slack:
 python slack_integration.py
 ```
 
-This will format the metrics and insights into a nicely formatted Slack message with
-links to the Looker Studio dashboard.
+This will format the metrics and insights into a nicely formatted Slack message with links to the Looker Studio dashboard.
 
-## What Gets Created
+### What Gets Created
 
 1. **List**: `Mock_Reporting_List` with 25 profiles
 2. **Campaigns**:
@@ -93,6 +92,31 @@ links to the Looker Studio dashboard.
 5. **Integrations**:
    - Slack notifications with campaign performance metrics
    - Links to Looker Studio dashboards
+
+## Narrow Scope POC
+
+A narrowed scope POC has been implemented to focus specifically on automating Klaviyo report generation via Looker Studio using direct Klaviyo APIs. This implementation includes:
+
+- **klaviyo_api_ingest.py**: Extracts campaign metrics from the Klaviyo API
+- **lookml_field_mapper.py**: Normalizes Klaviyo fields to match Looker Studio schema
+- **etl_runner.py**: Integrates the fetch → normalize → export pipeline
+- **mock_looker_dataset.csv**: Mock dataset for testing visualizations
+- **test_visualization_stub.json**: Sample Looker Studio configuration
+
+For detailed information on the narrow scope POC, see [README-NARROW-SCOPE-POC.md](README-NARROW-SCOPE-POC.md).
+
+### Running the Narrow Scope POC
+
+```bash
+# Run the full ETL pipeline
+python src/etl_runner.py --output klaviyo_metrics.csv
+
+# Or run individual components
+python src/klaviyo_api_ingest.py --output campaigns.csv
+python src/lookml_field_mapper.py
+```
+
+See the [Narrow Scope POC Documentation](README-NARROW-SCOPE-POC.md) for more details.
 
 ## Notes
 
@@ -109,6 +133,13 @@ If you encounter API errors:
 - Check that the key in private-api-key.txt doesn't have trailing whitespace
 - The script includes rate limiting to avoid overwhelming the Klaviyo API
 - If API calls are failing, check if the API revision (2025-04-15) is still supported
+
+## Known Limitations
+
+- The current implementation only supports basic campaign metrics (open rate, click rate)
+- No authentication for Looker Studio integration (manual upload required)
+- Limited error handling for API rate limits
+- No automated scheduling of data refresh
 
 ## Security
 
