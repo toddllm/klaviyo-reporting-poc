@@ -38,9 +38,9 @@ done
 
 # Set dry run flag for all scripts
 DRY_RUN_FLAG=""
-if [ "$DRY_RUN" = true ]; then
+if [ "$DRY_RUN" = true ] || [ "$MODE" = "mock" ]; then
   DRY_RUN_FLAG="--dry-run"
-  echo "Running in dry-run mode"
+  echo "Running in dry-run (mock) mode"
 fi
 
 # Set mode for all scripts
@@ -109,9 +109,9 @@ check_script() {
 # Check if seed_profiles.py exists and supports the mode flag
 if [ "$(check_script seed_profiles.py exists)" = "true" ]; then
   if [ "$(check_script seed_profiles.py mode)" = "true" ]; then
-    run_with_polling "python seed_profiles.py $DRY_RUN_FLAG $MODE_FLAG" ""
+    run_with_polling "python seed_profiles.py $DRY_RUN_FLAG $MODE_FLAG --num=5" ""
   else
-    run_with_polling "python seed_profiles.py $DRY_RUN_FLAG" ""
+    run_with_polling "python seed_profiles.py $DRY_RUN_FLAG --num=5" ""
   fi
 else
   echo "Warning: seed_profiles.py not found, skipping this step"
