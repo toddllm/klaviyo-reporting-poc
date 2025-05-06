@@ -4,6 +4,9 @@ import tempfile
 import json
 import csv
 from unittest.mock import patch, MagicMock
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.etl_runner import (
     extract,
     transform,
@@ -76,9 +79,9 @@ SAMPLE_TRANSFORMED_DATA = [
 ]
 
 # Test extract function
-@patch("src.etl_runner.fetch_all_campaigns")
-@patch("src.etl_runner.fetch_campaign_metrics")
-@patch("src.etl_runner.time.sleep")
+@patch("klaviyo_api_ingest.fetch_all_campaigns")
+@patch("klaviyo_api_ingest.fetch_campaign_metrics")
+@patch("time.sleep")
 def test_extract(mock_sleep, mock_fetch_metrics, mock_fetch_campaigns):
     # Mock the API calls
     mock_fetch_campaigns.return_value = [
@@ -105,7 +108,7 @@ def test_extract(mock_sleep, mock_fetch_metrics, mock_fetch_campaigns):
     assert mock_sleep.call_count == 2
 
 # Test transform function
-@patch("src.etl_runner.normalize_records")
+@patch("lookml_field_mapper.normalize_records")
 def test_transform(mock_normalize):
     # Mock the normalize_records function
     mock_normalize.return_value = SAMPLE_TRANSFORMED_DATA
