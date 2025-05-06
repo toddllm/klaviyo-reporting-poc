@@ -1,0 +1,123 @@
+{
+  "_comment": "This is a configuration template for Google 'Extract Data' connector in Looker Studio for Klaviyo data",
+  "extractConfig": {
+    "name": "Klaviyo Campaign Performance Extract",
+    "description": "Pre-filtered extract of Klaviyo campaign performance data for the last 90 days",
+    "source": {
+      "type": "BIGQUERY",
+      "projectId": "${PROJECT_ID}",
+      "datasetId": "klaviyo_raw",
+      "tableId": "events"
+    },
+    "extract": {
+      "fields": [
+        {"name": "date", "type": "DATE"},
+        {"name": "campaign_id", "type": "STRING"},
+        {"name": "campaign_name", "type": "STRING"},
+        {"name": "send_time", "type": "DATETIME"},
+        {"name": "open_rate", "type": "NUMBER"},
+        {"name": "click_rate", "type": "NUMBER"},
+        {"name": "subject_line", "type": "STRING"},
+        {"name": "list_id", "type": "STRING"},
+        {"name": "recipients", "type": "INTEGER"},
+        {"name": "opens", "type": "INTEGER"},
+        {"name": "clicks", "type": "INTEGER"},
+        {"name": "unsubscribes", "type": "INTEGER"}
+      ],
+      "filters": [
+        {
+          "fieldName": "date",
+          "operator": "GREATER_OR_EQUAL",
+          "values": ["DATE_ADD(CURRENT_DATE(), INTERVAL -90 DAY)"]
+        }
+      ],
+      "aggregation": {
+        "dimensions": ["campaign_id", "date"],
+        "metrics": [
+          {"name": "recipients", "function": "SUM"},
+          {"name": "opens", "function": "SUM"},
+          {"name": "clicks", "function": "SUM"},
+          {"name": "unsubscribes", "function": "SUM"}
+        ],
+        "calculatedFields": [
+          {
+            "name": "open_rate",
+            "formula": "SUM(opens) / SUM(recipients)",
+            "type": "NUMBER"
+          },
+          {
+            "name": "click_rate",
+            "formula": "SUM(clicks) / SUM(recipients)",
+            "type": "NUMBER"
+          }
+        ]
+      },
+      "limit": 10000,
+      "refreshSchedule": {
+        "frequency": "DAILY",
+        "hour": 4,
+        "timezone": "America/New_York"
+      }
+    },
+    "destination": {
+      "type": "BIGQUERY",
+      "projectId": "${PROJECT_ID}",
+      "datasetId": "looker_extracts",
+      "tableId": "klaviyo_campaign_performance_90d"
+    }
+  },
+  "visualizationConfig": {
+    "charts": [
+      {
+        "type": "TIME_SERIES",
+        "title": "Campaign Performance Trends (90 Days)",
+        "dimensions": ["date"],
+        "metrics": ["open_rate", "click_rate"],
+        "settings": {
+          "lineStyles": [
+            {"metric": "open_rate", "color": "#4285F4", "thickness": 2},
+            {"metric": "click_rate", "color": "#34A853", "thickness": 2}
+          ],
+          "compareMode": "PERCENT_CHANGE",
+          "comparePeriod": "PREVIOUS_PERIOD"
+        }
+      },
+      {
+        "type": "BAR",
+        "title": "Campaign Performance by ID",
+        "dimensions": ["campaign_id"],
+        "metrics": ["open_rate", "click_rate"],
+        "settings": {
+          "orientation": "HORIZONTAL",
+          "sortBy": "open_rate",
+          "sortOrder": "DESCENDING",
+          "limit": 10
+        }
+      }
+    ],
+    "filters": [
+      {
+        "type": "DATE_RANGE",
+        "field": "date",
+        "defaultValues": {
+          "start": "last-90-days",
+          "end": "today"
+        }
+      },
+      {
+        "type": "LIST",
+        "field": "campaign_id",
+        "allowMultiple": true
+      }
+    ]
+  },
+  "implementationNotes": {
+    "prerequisites": [
+      "BigQuery project with klaviyo_raw.events table populated",
+      "Permission to create extracts in Looker Studio",
+      "looker_extracts dataset created in BigQuery"
+    ],
+    "sizeEstimation": "Typical 90-day extract with daily aggregation by campaign_id should be well under the 100MB limit",
+    "refreshConsiderations": "Extract is configured to refresh daily at 4 AM ET; manual refresh can be triggered from Looker Studio"
+  }
+}
