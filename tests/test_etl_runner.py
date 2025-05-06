@@ -7,6 +7,14 @@ from unittest.mock import patch, MagicMock
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Mock the imports in etl_runner.py
+import unittest.mock
+unittest.mock.patch.dict('sys.modules', {
+    'klaviyo_api_ingest': unittest.mock.MagicMock(),
+    'lookml_field_mapper': unittest.mock.MagicMock()
+}).start()
+
 from src.etl_runner import (
     extract,
     transform,
