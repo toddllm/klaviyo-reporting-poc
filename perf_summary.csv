@@ -1,0 +1,8 @@
+query_type,date_range,runs,success_rate,avg_time,min_time,max_time,avg_rows
+klaviyo_api,1-day,3,0.0%,0.00,0.00,0.00,0.0
+klaviyo_api,7-day,3,0.0%,0.00,0.00,0.00,0.0
+klaviyo_api,30-day,3,0.0%,0.00,0.00,0.00,0.0
+supermetrics,1-day,3,100.0%,0.00,0.00,0.00,2.0
+supermetrics,7-day,3,100.0%,0.00,0.00,0.00,2.0
+supermetrics,30-day,3,100.0%,0.00,0.00,0.00,2.0
+full_etl,default,2,100.0%,0.00,0.00,0.00,0.0
