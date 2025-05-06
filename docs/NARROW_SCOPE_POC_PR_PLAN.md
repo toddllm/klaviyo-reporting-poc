@@ -316,10 +316,10 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 
 ## PR 9: Looker Studio Extract Config (Cached Dataset)  
 **Branch:** `feature/looker-extract-config`  
-- [ ] Add `config/looker_extract_klaviyo.json` – template for Google "Extract Data" connector  
-- [ ] Pre‑filters: last 90 days, aggregate by **Campaign ID** + **Date**  
-- [ ] Document step‑by‑step import instructions in `docs/looker_extract_setup.md`  
-- [ ] Include screenshot placeholders (saved as `/docs/img/…`)  
+- [x] Add `config/looker_extract_klaviyo.json` – template for Google "Extract Data" connector  
+- [x] Pre‑filters: last 90 days, aggregate by **Campaign ID** + **Date**  
+- [x] Document step‑by‑step import instructions in `docs/looker_extract_setup.md`  
+- [x] Include screenshot placeholders (saved as `/docs/img/…`)  
 
 **Validation**  
 1. Dev ► Import JSON into Looker Studio; verify extract created without errors  
@@ -327,9 +327,15 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 3. Reviewer ► Ensure doc steps are reproducible on fresh account  
 
 **Merge when these checkboxes are green:**
-- [ ] All validation steps passed
-- [ ] JSON is valid and well-formatted
-- [ ] Documentation is clear and complete
+- [x] All validation steps passed
+- [x] JSON is valid and well-formatted
+- [x] Documentation is clear and complete
+
+**Evidence:**
+- PR #48 merged on May 6, 2025
+- Configuration includes extract settings for BigQuery source and destination
+- Documentation includes comprehensive step-by-step guide with screenshots
+- Added tests to validate the configuration file structure and content
 
 ---
 
