@@ -36,3 +36,8 @@ ENV/
 
 # Project specific
 archive/
+.metric_ids.json
+.python-version
+campaign_report.csv
+Pipfile
+Pipfile.lock
