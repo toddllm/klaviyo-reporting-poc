@@ -1,5 +1,11 @@
 # Klaviyo Reporting POC - Getting Started
 
+## Current Status
+
+**IMPORTANT: All PRs from the initial phase have been completed as of May 6, 2025.**
+
+We are now moving to the **Narrow Scope POC** implementation phase. The new PR plan is defined in [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md).
+
 ## Overview
 
 This document provides a step-by-step guide for working with this repository, including how to follow the PR plan, manage branches, and maintain a clean repository. All team members should start here to understand the workflow.
@@ -34,13 +40,13 @@ As a tester, you are responsible for:
 2. Documenting evidence of successful validation
 3. Updating the PR plan with validation evidence
 
-## Working Through the PR Plan
+## Working Through the Narrow Scope POC PR Plan
 
-We are systematically working through the PR list defined in [GITHUB_PR_PLAN.md](docs/GITHUB_PR_PLAN.md). This plan outlines all the PRs that need to be completed for this project.
+We are now implementing the Narrow Scope POC as defined in [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md). This plan outlines the 6 PRs that need to be completed for this phase of the project.
 
 ### Steps for Working on a PR
 
-1. **Check the PR Plan**: Review [GITHUB_PR_PLAN.md](docs/GITHUB_PR_PLAN.md) to identify the next PR to work on.
+1. **Check the PR Plan**: Review [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md) to identify the next PR to work on.
    - Look for PRs that don't have checkmarks (`[ ]` instead of `[x]`)
    - Check if there's a specific branch name specified in the PR plan
 
@@ -64,7 +70,7 @@ We are systematically working through the PR list defined in [GITHUB_PR_PLAN.md]
    ```
 
 5. **Create a PR**: When your changes are ready, create a PR on GitHub:
-   - Title: Include the PR number and title from the plan (e.g., "PR 4: Metric Aggregates & Revenue Call")
+   - Title: Include the PR number and title from the plan (e.g., "PR 1: Klaviyo API Ingest Script")
    - Description: Reference the PR plan with a link to the document
    - Include a checklist of completed items from the PR plan
    - Document any evidence required by the validation steps
@@ -168,9 +174,30 @@ gh pr view <PR-NUMBER>
 
 ## Next Steps
 
-1. Review the [GITHUB_PR_PLAN.md](docs/GITHUB_PR_PLAN.md) to identify the next PR to work on
+1. Review the [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md) to identify the next PR to work on
 2. Follow the detailed Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
 3. After completing a PR, update the PR plan to mark it as completed
+4. When all Narrow Scope POC PRs are completed, update this START-HERE.md file to reflect the new status
+
+## Narrow Scope POC Overview
+
+The Narrow Scope POC implementation is divided into 6 sequential PRs:
+
+1. **PR 1: Klaviyo API Ingest Script** - Create a script to fetch campaign metrics from the Klaviyo API
+2. **PR 2: LookML Field Mapper** - Normalize Klaviyo fields for Looker Studio
+3. **PR 3: Mock Looker Dataset** - Create a mock dataset for testing
+4. **PR 4: Test Visualization Stub** - Create a sample Looker Studio JSON config
+5. **PR 5: ETL Runner** - Integrate fetch → normalize → export
+6. **PR 6: README Updates** - Document the POC pipeline
+
+Detailed implementation guides for each PR are available in the `docs/` directory:
+
+- `docs/PR1_IMPLEMENTATION_GUIDE.md`
+- `docs/PR2_IMPLEMENTATION_GUIDE.md`
+- `docs/PR3_IMPLEMENTATION_GUIDE.md`
+- `docs/PR4_IMPLEMENTATION_GUIDE.md`
+- `docs/PR5_IMPLEMENTATION_GUIDE.md`
+- `docs/PR6_IMPLEMENTATION_GUIDE.md`
 
 ---
 

@@ -118,10 +118,10 @@ If you encounter API errors:
 
 ## Development
 
-⚠️ **IMPORTANT: All developers must follow the GitHub PR Plan** ⚠️
+⚠️ **IMPORTANT: All developers must follow the Narrow Scope POC PR Plan** ⚠️
 
 This project follows a structured development process outlined in the
-[GitHub PR Plan](docs/GITHUB_PR_PLAN.md). Before creating any PRs or making changes,
+[Narrow Scope POC PR Plan](docs/NARROW_SCOPE_POC_PR_PLAN.md). Before creating any PRs or making changes,
 please review this document.
 
 All PRs must:
@@ -132,3 +132,5 @@ All PRs must:
 
 Do not create PRs that are not part of the plan without discussing with the team
 first.
+
+For a complete guide on working with this repository, please refer to the [START-HERE.md](START-HERE.md) file.
