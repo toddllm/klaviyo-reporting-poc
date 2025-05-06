@@ -6,7 +6,7 @@ This file tracks the implementation progress of the PRs defined in the Narrow Sc
 
 | PR # | Description | Status | Branch | PR Link |
 |------|-------------|--------|--------|--------|
-| PR1  | Klaviyo API Ingest Script | Completed | feature/pr1-klaviyo-api-ingest | - |
+| PR1  | Klaviyo API Ingest Script | Completed | feature/pr1-klaviyo-api-ingest | [PR #30](https://github.com/toddllm/klaviyo-reporting-poc/pull/30) |
 | PR2  | LookML Field Mapper | Not Started | - | - |
 | PR3  | Data Transformation Module | Not Started | - | - |
 | PR4  | Reporting Dashboard | Not Started | - | - |
