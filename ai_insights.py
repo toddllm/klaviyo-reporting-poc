@@ -33,6 +33,8 @@ def load_metrics_from_csv(file_path="metrics.csv"):
                     metrics[key] = int(metrics[key])
             if 'revenue' in metrics:
                 metrics['revenue'] = float(metrics['revenue'])
+            if 'campaign_id' not in metrics:
+                metrics['campaign_id'] = os.environ.get("CAMPAIGN_ID", "unknown")
             return metrics
     except (FileNotFoundError, StopIteration):
         return get_mock_metrics()
