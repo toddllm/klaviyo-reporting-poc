@@ -25,12 +25,12 @@ This PR adds the klaviyo_api_ingest.py script for fetching campaign metrics from
 
 ## PR 1: Klaviyo API Ingest Script
 **Branch:** feature/klaviyo-api-ingest
-- [ ] Create `src/klaviyo_api_ingest.py` for fetching campaign metrics from Klaviyo API
-- [ ] Implement API key authentication
-- [ ] Add functionality to fetch campaign list and associated metrics
-- [ ] Include pagination and error handling
-- [ ] Output data to a local CSV or JSON file
-- [ ] Add unit tests in `tests/test_klaviyo_api_ingest.py`
+- [x] Create `src/klaviyo_api_ingest.py` for fetching campaign metrics from Klaviyo API
+- [x] Implement API key authentication
+- [x] Add functionality to fetch campaign list and associated metrics
+- [x] Include pagination and error handling
+- [x] Output data to a local CSV or JSON file
+- [x] Add unit tests in `tests/test_klaviyo_api_ingest.py`
 
 **Validation:**
 1. Developer: Run `python src/klaviyo_api_ingest.py --dry-run` to verify API request format
@@ -39,9 +39,14 @@ This PR adds the klaviyo_api_ingest.py script for fetching campaign metrics from
 4. Reviewer: Confirm pagination works correctly for large result sets
 
 **Merge when these checkboxes are green:**
-- [ ] All validation steps passed
-- [ ] Code follows project style guidelines
-- [ ] Unit tests cover key functionality
+- [x] All validation steps passed
+- [x] Code follows project style guidelines
+- [x] Unit tests cover key functionality
+
+**Evidence:**
+- PR merged on May 6, 2025
+- All tests passing: `pytest tests/test_klaviyo_api_ingest.py`
+- Implementation includes API key authentication, pagination, error handling, and CSV/JSON output
 
 ---
 
@@ -72,10 +77,10 @@ This PR adds the klaviyo_api_ingest.py script for fetching campaign metrics from
 
 ## PR 3: Mock Looker Dataset
 **Branch:** feature/mock-looker-dataset
-- [ ] Create `data/mock_looker_dataset.csv` with realistic mock data
-- [ ] Include fields: `date`, `campaign_name`, `send_time`, `open_rate`, `click_rate`, `subject_line`, `list_id`
-- [ ] Add at least 10 rows of realistic data
-- [ ] Add documentation on how to use the mock dataset
+- [x] Create `data/mock_looker_dataset.csv` with realistic mock data
+- [x] Include fields: `date`, `campaign_name`, `send_time`, `open_rate`, `click_rate`, `subject_line`, `list_id`
+- [x] Add at least 10 rows of realistic data
+- [x] Add documentation on how to use the mock dataset
 
 **Validation:**
 1. Developer: Verify CSV format is correct and can be loaded with standard CSV libraries
@@ -84,19 +89,25 @@ This PR adds the klaviyo_api_ingest.py script for fetching campaign metrics from
 4. Reviewer: Validate that the CSV can be imported into Looker Studio
 
 **Merge when these checkboxes are green:**
-- [ ] All validation steps passed
-- [ ] CSV format is valid
-- [ ] All required fields are present
-- [ ] Documentation is clear and complete
+- [x] All validation steps passed
+- [x] CSV format is valid
+- [x] All required fields are present
+- [x] Documentation is clear and complete
+
+**Evidence:**
+- PR merged on May 6, 2025
+- CSV contains 16 rows of realistic campaign data
+- All required fields are present and properly formatted
+- Data spans April-June 2025 with varied metrics
 
 ---
 
 ## PR 4: Test Visualization Stub
 **Branch:** feature/test-visualization-stub
-- [ ] Create `config/test_visualization_stub.json` with sample Looker Studio config
-- [ ] Define one line chart (open rate over time)
-- [ ] Define one bar chart (click rate by campaign)
-- [ ] Add comments explaining field requirements and naming assumptions
+- [x] Create `config/test_visualization_stub.json` with sample Looker Studio config
+- [x] Define one line chart (open rate over time)
+- [x] Define one bar chart (click rate by campaign)
+- [x] Add comments explaining field requirements and naming assumptions
 
 **Validation:**
 1. Developer: Verify JSON is valid and well-formatted
@@ -105,10 +116,16 @@ This PR adds the klaviyo_api_ingest.py script for fetching campaign metrics from
 4. Reviewer: Validate that comments clearly explain field requirements
 
 **Merge when these checkboxes are green:**
-- [ ] All validation steps passed
-- [ ] JSON is valid and well-formatted
-- [ ] Visualization config aligns with mock dataset
-- [ ] Comments are clear and helpful
+- [x] All validation steps passed
+- [x] JSON is valid and well-formatted
+- [x] Visualization config aligns with mock dataset
+- [x] Comments are clear and helpful
+
+**Evidence:**
+- PR merged on May 6, 2025
+- JSON is valid and well-formatted with comprehensive comments
+- Configuration includes line chart for open rate over time and bar chart for click rate by campaign
+- Implementation includes detailed field requirements and implementation notes
 
 ---
 
