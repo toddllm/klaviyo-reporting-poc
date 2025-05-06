@@ -47,10 +47,10 @@ This PR adds the klaviyo_api_ingest.py script for fetching campaign metrics from
 
 ## PR 2: LookML Field Mapper
 **Branch:** feature/lookml-field-mapper
-- [ ] Create `src/lookml_field_mapper.py` for normalizing Klaviyo fields
-- [ ] Implement mapping dictionary from raw Klaviyo field names to reporting-ready field names
-- [ ] Add unit tests in `tests/test_lookml_field_mapper.py`
-- [ ] Ensure the mapper can be reused in pipeline or mock data setup
+- [x] Create `src/lookml_field_mapper.py` for normalizing Klaviyo fields
+- [x] Implement mapping dictionary from raw Klaviyo field names to reporting-ready field names
+- [x] Add unit tests in `tests/test_lookml_field_mapper.py`
+- [x] Ensure the mapper can be reused in pipeline or mock data setup
 
 **Validation:**
 1. Developer: Run unit tests with `pytest tests/test_lookml_field_mapper.py`
@@ -59,9 +59,14 @@ This PR adds the klaviyo_api_ingest.py script for fetching campaign metrics from
 4. Reviewer: Ensure edge cases are handled (missing fields, null values, etc.)
 
 **Merge when these checkboxes are green:**
-- [ ] All validation steps passed
-- [ ] Code follows project style guidelines
-- [ ] Unit tests cover key functionality
+- [x] All validation steps passed
+- [x] Code follows project style guidelines
+- [x] Unit tests cover key functionality
+
+**Evidence:**
+- PR #35 merged on May 6, 2025
+- All tests passing: `pytest tests/test_lookml_field_mapper.py`
+- Implementation includes field mapping, date formatting, derived fields calculation, and error handling
 
 ---
 
