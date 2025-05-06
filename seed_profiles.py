@@ -98,9 +98,10 @@ def post_json_api(url, payload, dry_run=False):
 
     headers = {
         "Authorization": f"Klaviyo-API-Key {KLAVIYO_API_KEY}",
+        "Revision": KLAVIYO_API_VERSION,
         "Klaviyo-Api-Version": KLAVIYO_API_VERSION,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
+        "Content-Type": "application/vnd.api+json",
+        "Accept": "application/vnd.api+json",
         "Idempotency-Key": str(uuid.uuid4())  # Prevent duplicates on retry
     }
     return requests.post(url, headers=headers, json=payload, timeout=15)
@@ -161,27 +162,15 @@ def create_and_subscribe_profiles(profiles, dry_run=False):
     Returns:
         tuple: (list of emails, status_code) for summary reporting
     """
+    # Subscribe profiles via JSON:API relationship endpoint for real API testing
     url = f"{BASE_URL}/lists/{AUDIENCE_ID}/relationships/profiles/"
-    
-    # Convert profiles to the expected JSON-API format
-    data = [{
-        "type": "profile",
-        "attributes": profile
-    } for profile in profiles]
-    
+    data = [{"type": "profile", "id": f"email:{p['email']}"} for p in profiles]
     payload = {"data": data}
-    
     response = post_json_api(url, payload, dry_run)
     if not dry_run:
-        status_msg = {
-            200: "updated",
-            201: "created",
-            202: "accepted for processing"
-        }.get(response.status_code, "processed")
+        status_msg = {200: "updated", 201: "created", 202: "accepted for processing"}.get(response.status_code, "processed")
         print(f"{status_msg.capitalize()} {len(profiles)} profiles for list {AUDIENCE_ID} (status {response.status_code})")
-    
-    # Return emails and status code for summary reporting
-    emails = [profile["email"] for profile in profiles]
+    emails = [p['email'] for p in profiles]
     return emails, response.status_code
 
 
