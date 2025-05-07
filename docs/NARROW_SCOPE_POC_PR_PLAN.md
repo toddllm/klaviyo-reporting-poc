@@ -402,15 +402,25 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 
 ## PR 12: Live ETL Runner (Supermetrics → Mapper → CSV → S3)  
 **Branch:** `feature/etl-live-supermetrics`  
-- [ ] Extend `etl_runner.py` to accept `--source supermetrics` and call `supermetrics_klaviyo_pull.py`  
-- [ ] Pipe pulled JSON → `lookml_field_mapper.py` → CSV  
-- [ ] Upload final CSV to `s3://$S3_BUCKET/klaviyo_campaign_metrics_{{ds}}.csv`  
-- [ ] Add CLI args for date range (`--start`, `--end`)  
-- [ ] Add integration tests with moto‑mocked S3 (`tests/test_etl_runner_live.py`)  
+- [x] Extend `etl_runner.py` to accept `--source supermetrics` and call `supermetrics_klaviyo_pull.py`  
+- [x] Pipe pulled JSON → `lookml_field_mapper.py` → CSV  
+- [x] Upload final CSV to `s3://$S3_BUCKET/klaviyo_campaign_metrics_{{ds}}.csv`  
+- [x] Add CLI args for date range (`--start`, `--end`)  
+- [x] Add integration tests with moto‑mocked S3 (`tests/test_etl_runner_live.py`)  
 
 **Validation**  
 1. `pytest -k live` passes using moto  
 2. Manual run with real creds writes file to S3 and prints object URL  
+
+**Merge when these checkboxes are green:**
+- [ ] All validation steps passed
+- [ ] Code follows project style guidelines
+- [ ] Integration tests cover key functionality
+
+**Evidence:**
+- PR #52 created on May 6, 2025
+- Implementation includes Supermetrics integration, S3 upload, and date range parameters
+- Integration tests with moto-mocked S3 passing
 
 ---
 
