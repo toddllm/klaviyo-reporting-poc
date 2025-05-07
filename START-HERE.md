@@ -12,7 +12,11 @@
 
 **NEW DEMO-READY PLAN: A client-facing demo plan has been created with PRs 22-26 to build a complete reporting solution. See [DEMO_READY_PR_PLAN.md](docs/DEMO_READY_PR_PLAN.md) for details.**
 
+**CRITICAL FIX PLAN: After smoke-testing, we've identified issues with the reporting view and deployment process. PRs 28-31 have been defined to fix these issues. See [FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md](docs/FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md) for details.**
+
 The Narrow Scope POC has been successfully implemented according to the initial PR plan. All 6 initial PRs have been merged and the implementation is now ready for demonstration. The project is now moving to a Fivetran + BigQuery integration approach as defined in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md), which replaces the previously planned Supermetrics integration.
+
+After smoke-testing the reporting pipeline, we've identified critical issues with the BigQuery view and deployment process. A new set of PRs (28-31) has been defined to fix these issues and ensure a successful client demo. See [FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md](docs/FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md) for details.
 
 ## Overview
 
@@ -68,6 +72,7 @@ To prepare for client-facing demonstrations, we have defined a new set of PRs (2
    - For Fivetran + BigQuery integration: [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md)
    - For BigQuery sanity checks: [BQ_SANITY_PR_PLAN.md](docs/BQ_SANITY_PR_PLAN.md)
    - For client-facing demo preparation: [DEMO_READY_PR_PLAN.md](docs/DEMO_READY_PR_PLAN.md)
+   - For critical fixes to reporting view and deployment: [FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md](docs/FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md)
    - Look for PRs that don't have checkmarks (`[ ]` instead of `[x]`)
    - Check if there's a specific branch name specified in the PR plan
 
@@ -217,12 +222,17 @@ gh pr view <PR-NUMBER>
    - PR 24: Google Sheets Exporter (Optional Upsell)
    - PR 25: Demo Orchestrator v2
    - PR 26: Client Demo Docs & Slide Deck
-6. For future development, continue to follow the detailed Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
-7. Any new features or enhancements should be discussed with the team before creating new branches or PRs
+6. Implement the Critical Fix PRs (28-31) as defined in [FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md](docs/FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md):
+   - PR 28: BigQuery View and Deploy Script Fix
+   - PR 29: ETL Runner Import and Empty Extract Fix
+   - PR 30: Environment Configuration Examples and Documentation
+   - PR 31: Remove Flow Table from Smoke Test (Optional)
+7. For future development, continue to follow the detailed Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
+8. Any new features or enhancements should be discussed with the team before creating new branches or PRs
 
 ## Project Overview
 
-The project implementation is divided into four phases:
+The project implementation is divided into five phases:
 
 ### Phase 1: Core Implementation (Completed)
 
@@ -233,7 +243,7 @@ The project implementation is divided into four phases:
 5. **PR 5: ETL Runner** - Integrate fetch → normalize → export
 6. **PR 6: README Updates** - Document the POC pipeline
 
-### Phase 2: Fivetran + BigQuery Integration (Current Focus)
+### Phase 2: Fivetran + BigQuery Integration (Completed)
 
 13. **PR 13: Fivetran API Client** - Create a client for interacting with the Fivetran API
 14. **PR 14: Connector Runner** - Trigger Fivetran syncs and wait for completion
@@ -244,20 +254,27 @@ The project implementation is divided into four phases:
 19. **PR 19: AWS SES Email Smoke Test** - Send test emails via AWS SES
 20. **PR 20: Documentation & .env Template** - Update documentation for the new integration
 
-### Phase 3: BigQuery Sanity Checks (Upcoming)
+### Phase 3: BigQuery Sanity Checks (Completed)
 
 - **BigQuery Sanity-Check Script** - Python script to verify BigQuery tables
 - **End-to-End Demo Integration** - Add sanity checks to the end-to-end demo
 - **CI Job: Nightly Sanity Check** - Automated nightly verification
 - **Documentation & Environment Updates** - Update docs and environment templates
 
-### Phase 4: Demo-Ready Implementation (Planned)
+### Phase 4: Demo-Ready Implementation (Completed)
 
 22. **PR 22: BigQuery Reporting View + Permissions** - Create a reporting view in BigQuery for client-facing metrics
 23. **PR 23: Looker Studio Template JSON** - Create a Looker Studio dashboard template for client demos
 24. **PR 24: Google Sheets Exporter** - Create a utility to export metrics to Google Sheets as an upsell option
 25. **PR 25: Demo Orchestrator v2** - Extend the end-to-end demo script to include all components
 26. **PR 26: Client Demo Docs & Slide Deck** - Create documentation and presentation materials for client demos
+
+### Phase 5: Critical Fixes (Current Focus)
+
+28. **PR 28: BigQuery View and Deploy Script Fix** - Fix issues with the BigQuery reporting view and deployment script
+29. **PR 29: ETL Runner Import and Empty Extract Fix** - Fix module import issues and handle empty extracts
+30. **PR 30: Environment Configuration Examples and Documentation** - Add environment configuration examples and documentation
+31. **PR 31: Remove Flow Table from Smoke Test (Optional)** - Optionally remove the flow table from the smoke test requirements
 
 Detailed implementation guides for Phase 1 PRs are available in the `docs/` directory:
 
@@ -268,7 +285,7 @@ Detailed implementation guides for Phase 1 PRs are available in the `docs/` dire
 - `docs/PR5_IMPLEMENTATION_GUIDE.md`
 - `docs/PR6_IMPLEMENTATION_GUIDE.md`
 
-Implementation details for Phase 2 can be found in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md), details for Phase 3 can be found in [BQ_SANITY_PR_PLAN.md](docs/BQ_SANITY_PR_PLAN.md), and details for Phase 4 can be found in [DEMO_READY_PR_PLAN.md](docs/DEMO_READY_PR_PLAN.md).
+Implementation details for Phase 2 can be found in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md), details for Phase 3 can be found in [BQ_SANITY_PR_PLAN.md](docs/BQ_SANITY_PR_PLAN.md), details for Phase 4 can be found in [DEMO_READY_PR_PLAN.md](docs/DEMO_READY_PR_PLAN.md), and details for Phase 5 can be found in [FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md](docs/FIX_REPORTING_VIEW_AND_DEPLOY_PR_PLAN.md).
 
 ---
 
