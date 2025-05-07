@@ -4,18 +4,21 @@ import argparse
 import json
 import csv
 import time
+import sys
 from datetime import datetime
+from typing import Optional, List, Dict, Any
 
 # Import from other modules
 from src.klaviyo_api_ingest import fetch_all_campaigns, fetch_campaign_metrics
 from src.lookml_field_mapper import normalize_records
+from src.utils.s3_uploader import upload_csv_to_s3
 
 # Constants
 DEFAULT_OUTPUT_DIR = "data"
 DEFAULT_OUTPUT_FILE = "klaviyo_campaign_metrics.csv"
 
 # ETL Functions
-def extract(dry_run=False):
+def extract_klaviyo(dry_run=False):
     """Extract data from Klaviyo API"""
     print("Extracting data from Klaviyo API...")
     
@@ -35,6 +38,30 @@ def extract(dry_run=False):
         time.sleep(0.2)
     
     return campaigns
+
+def extract_supermetrics(start_date: str, end_date: str, dry_run=False):
+    """Extract data from Supermetrics API"""
+    print(f"Extracting data from Supermetrics API for period {start_date} to {end_date}...")
+    
+    # Import here to avoid circular imports
+    from src.supermetrics_klaviyo_pull import fetch_all_data
+    
+    # Fetch campaign data
+    data = fetch_all_data(start_date, end_date, "campaign", dry_run)
+    print(f"Fetched {len(data)} records from Supermetrics API")
+    
+    return data
+
+def extract(source="klaviyo", start_date=None, end_date=None, dry_run=False):
+    """Extract data from the specified source"""
+    if source == "klaviyo":
+        return extract_klaviyo(dry_run)
+    elif source == "supermetrics":
+        if not start_date or not end_date:
+            raise ValueError("Supermetrics source requires start_date and end_date parameters")
+        return extract_supermetrics(start_date, end_date, dry_run)
+    else:
+        raise ValueError(f"Unsupported source: {source}")
 
 def transform(raw_data):
     """Transform data using the LookML field mapper"""
@@ -96,8 +123,22 @@ def write_to_json(data, output_file):
         print(f"Error writing to JSON: {e}")
         return False
 
-def run_etl(dry_run=False, output_file=None, format="csv"):
-    """Run the full ETL process"""
+def run_etl(dry_run=False, output_file=None, format="csv", source="klaviyo", start_date=None, end_date=None, upload_to_s3=False, keep_local=True):
+    """Run the full ETL process
+    
+    Args:
+        dry_run: If True, don't make actual API calls
+        output_file: Path to output file. If None, a default path is used
+        format: Output format (csv or json)
+        source: Data source (klaviyo or supermetrics)
+        start_date: Start date for data extraction (required for supermetrics)
+        end_date: End date for data extraction (required for supermetrics)
+        upload_to_s3: If True, upload the output file to S3
+        keep_local: If True, keep the local output file after S3 upload
+        
+    Returns:
+        True if successful, False otherwise
+    """
     # Set default output file if not provided
     if not output_file:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -106,7 +147,7 @@ def run_etl(dry_run=False, output_file=None, format="csv"):
     
     try:
         # Extract
-        raw_data = extract(dry_run)
+        raw_data = extract(source, start_date, end_date, dry_run)
         if not raw_data:
             print("No data extracted. ETL process failed.")
             return False
@@ -124,6 +165,26 @@ def run_etl(dry_run=False, output_file=None, format="csv"):
             return False
         
         print(f"ETL process completed successfully. Output: {output_file}")
+        
+        # Upload to S3 if requested
+        if upload_to_s3 and not dry_run:
+            try:
+                # Generate S3 key using start_date
+                date_str = start_date if start_date else datetime.now().strftime("%Y-%m-%d")
+                s3_key = f"klaviyo_export_{date_str}.csv"
+                
+                # Upload to S3
+                s3_uri = upload_csv_to_s3(output_file, s3_key)
+                print(f"File uploaded to {s3_uri}")
+                
+                # Remove local file if not keeping it
+                if not keep_local:
+                    os.remove(output_file)
+                    print(f"Local file {output_file} removed")
+            except Exception as e:
+                print(f"S3 upload failed: {e}")
+                # Continue even if S3 upload fails
+        
         return True
     except Exception as e:
         print(f"ETL process failed: {e}")
@@ -142,21 +203,42 @@ def prepare_for_supermetrics(data_file, format="csv"):
     return True
 
 # Main Function
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description="ETL Runner for Klaviyo Campaign Metrics")
     parser.add_argument("--dry-run", action="store_true", help="Perform a dry run without making actual API calls")
     parser.add_argument("--output", help="Output file path")
     parser.add_argument("--format", choices=["csv", "json"], default="csv", help="Output format")
-    parser.add_argument("--supermetrics", action="store_true", help="Prepare data for Supermetrics integration")
-    args = parser.parse_args()
+    parser.add_argument("--source", choices=["klaviyo", "supermetrics"], default="klaviyo", help="Data source to extract from")
+    parser.add_argument("--start", help="Start date in YYYY-MM-DD format (required for supermetrics)")
+    parser.add_argument("--end", help="End date in YYYY-MM-DD format (required for supermetrics)")
+    parser.add_argument("--upload-to-s3", action="store_true", help="Upload the output file to S3")
+    parser.add_argument("--keep-local", action="store_true", default=True, help="Keep the local output file after S3 upload")
+    parser.add_argument("--supermetrics-legacy", action="store_true", help="Prepare data for Supermetrics integration (legacy)")
+    
+    args = parser.parse_args(argv)
+    
+    # Validate arguments
+    if args.source == "supermetrics" and (not args.start or not args.end):
+        parser.error("--start and --end are required when using --source supermetrics")
     
     # Run the ETL process
-    success = run_etl(args.dry_run, args.output, args.format)
+    success = run_etl(
+        dry_run=args.dry_run,
+        output_file=args.output,
+        format=args.format,
+        source=args.source,
+        start_date=args.start,
+        end_date=args.end,
+        upload_to_s3=args.upload_to_s3,
+        keep_local=args.keep_local
+    )
     
-    # Prepare for Supermetrics if requested
-    if success and args.supermetrics:
+    # Prepare for Supermetrics if requested (legacy support)
+    if success and args.supermetrics_legacy:
         output_file = args.output or os.path.join(DEFAULT_OUTPUT_DIR, DEFAULT_OUTPUT_FILE)
         prepare_for_supermetrics(output_file, args.format)
+        
+    return 0 if success else 1
 
 if __name__ == "__main__":
     main()
