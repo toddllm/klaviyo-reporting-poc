@@ -18,12 +18,9 @@ done
 SQL_FILE="sql/create_reporting_view.sql"
 VIEW="${PROJECT_ID}.${DATASET}.v_email_metrics"
 
-# Replace variables in SQL file
-SQL_CONTENT=$(cat "${SQL_FILE}" | sed "s/\${PROJECT_ID}/${PROJECT_ID}/g" | sed "s/\${DATASET}/${DATASET}/g")
-
 if $DRY_RUN; then
   echo "=== DRY RUN: View DDL ==="
-  echo "$SQL_CONTENT"
+  cat "${SQL_FILE}"
   echo ""
   echo "=== DRY RUN: IAM Grant ==="
   echo "gcloud bigquery datasets add-iam-policy-binding ${DATASET} \\"
@@ -35,7 +32,9 @@ fi
 
 echo "Deploying view ${VIEW}"
 bq query --nouse_legacy_sql --use_legacy_sql=false --replace \
-  --project_id="${PROJECT_ID}" "${SQL_CONTENT}"
+  --project_id="${PROJECT_ID}" \
+  --parameter="PROJECT_ID:STRING:${PROJECT_ID}" \
+  --parameter="DATASET:STRING:${DATASET}" < "${SQL_FILE}"
 
 echo "Granting Looker SA viewer on dataset ${DATASET}"
 gcloud bigquery datasets add-iam-policy-binding "${DATASET}" \
