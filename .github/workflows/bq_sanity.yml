@@ -1,0 +1,61 @@
+name: BigQuery Sanity Check
+
+on:
+  schedule:
+    # Run at 03:00 UTC every day
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    # Allow manual triggering
+
+jobs:
+  bq-sanity-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Decrypt secrets
+        env:
+          SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
+        run: |
+          if [ -f ".env.ci.gpg" ]; then
+            gpg --quiet --batch --yes --decrypt --passphrase="$SECRETS_PASSPHRASE" \
+                --output .env.ci .env.ci.gpg
+          else
+            echo "Warning: .env.ci.gpg not found, using environment variables"
+          fi
+
+      - name: Run BigQuery sanity check
+        env:
+          BQ_PROJECT: ${{ secrets.BQ_PROJECT }}
+          BQ_DATASET: ${{ secrets.BQ_DATASET }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          TABLE_LIST: "campaign,event,flow,list"
+        run: |
+          # Use .env.ci if available, otherwise use environment variables
+          if [ -f ".env.ci" ]; then
+            python scripts/bq_sanity_check.py --env .env.ci
+          else
+            python scripts/bq_sanity_check.py
+          fi
+
+      - name: Send notification on failure
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: monitoring
+          SLACK_COLOR: danger
+          SLACK_TITLE: BigQuery Sanity Check Failed
+          SLACK_MESSAGE: "The BigQuery sanity check failed. Some tables may be missing or empty."
+          SLACK_FOOTER: "Klaviyo Reporting POC"
