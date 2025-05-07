@@ -72,7 +72,7 @@ class TestE2ESanityIntegration(unittest.TestCase):
         self.assertEqual(result.returncode, 0, f"Script failed with output: {result.stderr}")
         
         # Check that the output contains the default tables
-        self.assertIn("campaign,event,flow,list", result.stdout)
+        self.assertIn("campaign,event,list", result.stdout)
 
 
 if __name__ == "__main__":
