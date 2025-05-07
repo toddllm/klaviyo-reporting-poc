@@ -10,11 +10,7 @@ class TestBigQueryReportingView(unittest.TestCase):
         self.dataset = os.environ.get('BQ_DATASET', 'klaviyopoc')
         self.looker_sa = os.environ.get('LOOKER_SA', 'looker_sa@clara-blueprint-script-24.iam.gserviceaccount.com')
         
-    @patch('subprocess.run')
-    def test_deploy_script_dry_run(self, mock_run):
-        # Mock the subprocess.run to avoid actual execution
-        mock_run.return_value = MagicMock(returncode=0)
-        
+    def test_deploy_script_dry_run(self):
         # Set environment variables
         env = os.environ.copy()
         env['PROJECT_ID'] = self.project_id
