@@ -9,6 +9,8 @@ This document provides a step-by-step guide for conducting a 15-minute Zoom demo
 - Access to the demo environment with all components set up
 - Completed end-to-end demo run using `scripts/run_end_to_end_demo.sh`
 - Client has been briefed on the purpose of the demo
+- Slide deck prepared and available at `docs/client_deck.pdf`
+- Editable Google Slides version: [Klaviyo Reporting Solution Slides](https://docs.google.com/presentation/d/XXXX)
 
 ## Demo Runsheet (15 minutes)
 
@@ -76,12 +78,37 @@ To provide clients with their own copy of the dashboard:
 - Dashboard Publishing Script: `scripts/publish_looker_template.sh`
 - End-to-End Demo Script: `scripts/run_end_to_end_demo.sh`
 - Client Slide Deck: `docs/client_deck.pdf`
+- QR Code Images: 
+  - Looker Studio Template: `docs/assets/qr/looker_template_qr.png`
+  - Google Sheets Template: `docs/assets/qr/sheets_template_qr.png`
 
 ## QR Codes
 
 The slide deck includes QR codes for:
 
-1. Looker Studio Dashboard Template
-2. Google Sheets Template (if applicable)
+1. Looker Studio Dashboard Template: https://lookerstudio.google.com/reporting/XXXX
+2. Google Sheets Template: https://docs.google.com/spreadsheets/d/XXXX
 
 These QR codes link directly to the "Make a copy" URLs for easy client access.
+
+## Speaker Notes
+
+### Introduction
+- Emphasize business value: 75% reduction in reporting time
+- Highlight the pain points of manual Klaviyo reporting
+- Establish credibility with client-specific examples
+
+### Solution Overview
+- Highlight modular pipeline for rapid iteration
+- Call out data governance & security features
+- Emphasize the automated nature of the solution
+
+### Dashboard Demo
+- Focus on metrics that matter most to the client
+- Show how to customize the dashboard for specific needs
+- Demonstrate the real-time data refresh capability
+
+### Next Steps
+- Outline clear implementation timeline (typically 2-3 weeks)
+- Discuss pricing options and ROI calculations
+- Provide contact information for follow-up questions
