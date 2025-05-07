@@ -48,3 +48,7 @@ poc_send_and_track.py
 poc_track_metrics.py
 report_campaign_metrics.py
 templates/
+
+# Credentials and logs
+fivetran_bq_key.json
+logs/
