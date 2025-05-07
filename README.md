@@ -10,7 +10,17 @@ This repository contains tools for generating realistic mock data in Klaviyo to 
 
 ### Fivetran + BigQuery Workflow
 
-*A new diagram illustrating the Fivetran → Postgres → Mapper → CSV → S3 → BigQuery → Looker Studio workflow will be added in PR 20.*
+![Fivetran + BigQuery Workflow](docs/img/fivetran_bigquery_flow.svg)
+
+The data flows through the system as follows:
+
+1. **Klaviyo → Fivetran**: Fivetran syncs Klaviyo data to a Postgres database
+2. **Fivetran → Postgres**: Raw Klaviyo data is stored in Postgres tables
+3. **Postgres → CSV**: Data is extracted from Postgres to CSV files
+4. **CSV → Field Mapper**: CSV data is processed through the field mapper
+5. **Field Mapper → S3**: Processed data is archived to S3 for long-term storage
+6. **Field Mapper → BigQuery**: Processed data is loaded into BigQuery tables
+7. **BigQuery → Looker Studio**: Looker Studio connects directly to BigQuery for visualization
 
 ## Features
 
@@ -186,7 +196,7 @@ python src/etl_runner.py --source fivetran --start 2024-05-01 --end 2024-05-07
 python src/etl_runner.py --source fivetran --start 2024-05-01 --end 2024-05-07 --upload-s3 s3://bucket/prefix/
 ```
 
-For detailed information on the Fivetran + BigQuery integration, see the [Fivetran + BigQuery Integration PR Plan](docs/FIVETRAN_BIGQUERY_PR_PLAN.md).
+For detailed information on the Fivetran + BigQuery integration, see the [POC Overview](docs/POC_OVERVIEW.md) and the [Fivetran + BigQuery Integration PR Plan](docs/FIVETRAN_BIGQUERY_PR_PLAN.md).
 
 ## Notes
 
