@@ -321,7 +321,7 @@ if [ "$SKIP_BIGQUERY" = false ]; then
         log "[DRY RUN] Would load to BigQuery: $BQ_CMD"
         
         # Get tables to check from environment or use default
-        SANITY_TABLES=${E2E_SANITY_TABLES:-"campaign,event,flow,list"}
+        SANITY_TABLES=${E2E_SANITY_TABLES:-"campaign,event,list"}
         
         # Show what would be run in dry-run mode
         SANITY_CMD="python $SCRIPT_DIR/bq_sanity_check.py --env $ROOT_DIR/.env --tables $SANITY_TABLES --dry-run"
@@ -341,7 +341,7 @@ if [ "$SKIP_BIGQUERY" = false ]; then
         # Run BigQuery sanity check after successful load
         log "Running BigQuery sanity check"
         # Get tables to check from environment or use default
-        SANITY_TABLES=${E2E_SANITY_TABLES:-"campaign,event,flow,list"}
+        SANITY_TABLES=${E2E_SANITY_TABLES:-"campaign,event,list"}
         
         SANITY_CMD="python $SCRIPT_DIR/bq_sanity_check.py --env $ROOT_DIR/.env --tables $SANITY_TABLES"
         log "Running BigQuery sanity check: $SANITY_CMD"

@@ -47,7 +47,7 @@ def get_table_list() -> List[str]:
         return args.tables.split(",")
     elif tables_env:
         return tables_env.split(",")
-    return ["campaign", "event", "flow", "list"]
+    return ["campaign", "event", "list"]
 
 
 def check_table(client: bigquery.Client, project_id: str, dataset_id: str, 

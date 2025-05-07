@@ -59,7 +59,7 @@ class TestBQSanityCheck(unittest.TestCase):
         bq_sanity_check.args.tables = ""
         
         tables = bq_sanity_check.get_table_list()
-        self.assertEqual(tables, ["campaign", "event", "flow", "list"])
+        self.assertEqual(tables, ["campaign", "event", "list"])
     
     def test_check_table_exists(self):
         # Create a direct mock for the client
