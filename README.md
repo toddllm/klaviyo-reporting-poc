@@ -199,6 +199,26 @@ python src/etl_runner.py --source fivetran --start 2024-05-01 --end 2024-05-07 -
 python src/bq_loader.py --file data/klaviyo_metrics_20250506_161741.csv --report-type campaign
 ```
 
+### Running the End-to-End Demo
+
+To run the complete end-to-end demo that showcases the entire data pipeline:
+
+```bash
+# Run the demo with default settings (last 30 days of data)
+./scripts/run_end_to_end_demo.sh
+
+# Run the demo for a specific date range
+./scripts/run_end_to_end_demo.sh --start-date 2025-04-01 --end-date 2025-04-30
+
+# Run in dry-run mode without making actual API calls
+./scripts/run_end_to_end_demo.sh --dry-run
+
+# Send email notification when complete
+./scripts/run_end_to_end_demo.sh --notify-email recipient@example.com
+```
+
+For detailed information about the end-to-end demo, see the [End-to-End Demo Guide](docs/END_TO_END_DEMO.md).
+
 ### Looker Studio Integration
 
 The Looker Studio integration provides interactive dashboards for visualizing Klaviyo campaign data. Key features include:
