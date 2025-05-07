@@ -142,7 +142,7 @@ else
 fi
 
 # Check for required environment variables
-required_vars=("FIVETRAN_API_KEY" "FIVETRAN_API_SECRET" "FIVETRAN_GROUP_ID" "FIVETRAN_CONNECTOR_ID" \
+required_vars=("FIVETRAN_GROUP_ID" "FIVETRAN_CONNECTOR_ID" \
                "PG_HOST" "PG_PORT" "PG_DB" "PG_USER" "PG_PASSWORD" \
                "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_REGION" \
                "S3_BUCKET" "S3_PREFIX" "SES_FROM_EMAIL")
@@ -153,6 +153,17 @@ for var in "${required_vars[@]}"; do
         exit 1
     fi
 done
+
+# Check for Fivetran authentication credentials
+if [ -z "$FIVETRAN_API_KEY" ] && [ -z "$FIVETRAN_API_SECRET" ] && \
+   [ -z "$FIVETRAN_SYSTEM_KEY" ] && [ -z "$FIVETRAN_SYSTEM_KEY_SECRET" ] && \
+   [ -z "$FIVETRAN_SYSTEM_KEY_B64" ]; then
+    log "Error: No Fivetran authentication credentials found. Set either:"
+    log "  - FIVETRAN_API_KEY and FIVETRAN_API_SECRET (classic API key), or"
+    log "  - FIVETRAN_SYSTEM_KEY and FIVETRAN_SYSTEM_KEY_SECRET (system key), or"
+    log "  - FIVETRAN_SYSTEM_KEY_B64 (pre-encoded system key)"
+    exit 1
+fi
 
 # Create timestamp for output files
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)

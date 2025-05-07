@@ -1,0 +1,2 @@
+[2025-05-06 23:26:39] Loading environment variables from .env file
+[2025-05-06 23:26:39] Error: Required environment variable FIVETRAN_API_KEY is not set.
