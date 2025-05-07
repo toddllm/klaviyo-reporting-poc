@@ -11,7 +11,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import the moto library for mocking AWS services
-from moto import mock_s3
+import moto
 
 # Import the modules to test
 from src.etl_runner import main, run_etl
@@ -96,15 +96,15 @@ def aws_credentials():
 
 @pytest.fixture
 def s3_client(aws_credentials):
-    with mock_s3():
+    with moto.mock_aws():
         # Create the S3 bucket
         s3 = boto3.client('s3', region_name='us-east-1')
         s3.create_bucket(Bucket='test-bucket')
         yield s3
 
 # Test the ETL runner with Supermetrics source and S3 upload
-@mock_s3
-def test_etl_runner_supermetrics_s3(mock_supermetrics_fetch, mock_normalize_records, aws_credentials, tmp_path):
+@moto.mock_aws()
+def test_etl_runner_supermetrics_s3(mock_supermetrics_fetch, mock_normalize_records, aws_credentials, tmp_path, s3_client):
     # Create a temporary output file
     output_file = os.path.join(tmp_path, 'output.csv')
     
@@ -155,8 +155,8 @@ def test_etl_runner_supermetrics_s3(mock_supermetrics_fetch, mock_normalize_reco
         assert 'Test Campaign 2' in content
 
 # Test the ETL runner with command-line arguments
-@mock_s3
-def test_etl_runner_cli(mock_supermetrics_fetch, mock_normalize_records, aws_credentials, tmp_path):
+@moto.mock_aws()
+def test_etl_runner_cli(mock_supermetrics_fetch, mock_normalize_records, aws_credentials, tmp_path, s3_client):
     # Create a temporary output file
     output_file = os.path.join(tmp_path, 'output.csv')
     
@@ -186,8 +186,8 @@ def test_etl_runner_cli(mock_supermetrics_fetch, mock_normalize_records, aws_cre
     assert 'Contents' in objects
 
 # Test the S3 uploader utility
-@mock_s3
-def test_s3_uploader(aws_credentials, tmp_path):
+@moto.mock_aws()
+def test_s3_uploader(aws_credentials, tmp_path, s3_client):
     # Create a test file
     test_file = os.path.join(tmp_path, 'test.csv')
     with open(test_file, 'w') as f:
