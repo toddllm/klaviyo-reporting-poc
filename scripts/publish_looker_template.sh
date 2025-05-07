@@ -4,7 +4,7 @@ set -e
 
 # Default values
 DRY_RUN=false
-DASHBOARD_JSON="../config/looker_dashboard.json"
+DASHBOARD_JSON="../config/looker_studio_dashboard_config.json"
 OUTPUT_JSON="../config/looker_studio_dashboard_config.json"
 
 # Parse command line arguments
