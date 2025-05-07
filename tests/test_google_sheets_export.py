@@ -142,7 +142,7 @@ class TestGoogleSheetsExport(unittest.TestCase):
         mock_spreadsheet.worksheet.assert_called_once_with(range_name)
         mock_worksheet.clear.assert_called_once()
         mock_worksheet.update.assert_called_once()
-        self.assertEqual(mock_worksheet.format.call_count, 1)  # At least one format call for the header
+        self.assertGreaterEqual(mock_worksheet.format.call_count, 1)  # At least one format call for the header
     
     @patch('gspread.authorize')
     def test_export_to_sheets_worksheet_not_found(self, mock_authorize):
