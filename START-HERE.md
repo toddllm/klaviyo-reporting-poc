@@ -6,9 +6,9 @@
 
 **UPDATE: All PRs for the Narrow Scope POC implementation phase have been completed as of May 6, 2025.**
 
-**NEW: Additional PRs (7-10) have been identified for extending the Narrow Scope POC functionality.**
+**NEW: The project has shifted from Supermetrics to Fivetran + BigQuery integration. PRs 13-20 have been identified for implementing this new approach.**
 
-The Narrow Scope POC has been successfully implemented according to the PR plan defined in [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md). All 6 initial PRs have been merged and the implementation is now ready for demonstration. Four additional PRs (7-10) have been identified to extend the functionality with Supermetrics integration, BigQuery loading, Looker Studio configuration, and performance testing.
+The Narrow Scope POC has been successfully implemented according to the initial PR plan. All 6 initial PRs have been merged and the implementation is now ready for demonstration. The project is now moving to a Fivetran + BigQuery integration approach as defined in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md), which replaces the previously planned Supermetrics integration.
 
 ## Overview
 
@@ -44,13 +44,13 @@ As a tester, you are responsible for:
 2. Documenting evidence of successful validation
 3. Updating the PR plan with validation evidence
 
-## Working Through the Narrow Scope POC PR Plan
+## Working Through the Fivetran + BigQuery Integration PR Plan
 
-We are now implementing the Narrow Scope POC as defined in [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md). This plan outlines the 6 PRs that need to be completed for this phase of the project.
+We are now implementing the Fivetran + BigQuery integration as defined in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md). This plan outlines the PRs (13-20) that need to be completed for this phase of the project.
 
 ### Steps for Working on a PR
 
-1. **Check the PR Plan**: Review [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md) to identify the next PR to work on.
+1. **Check the PR Plan**: Review [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md) to identify the next PR to work on.
    - Look for PRs that don't have checkmarks (`[ ]` instead of `[x]`)
    - Check if there's a specific branch name specified in the PR plan
 
@@ -178,19 +178,23 @@ gh pr view <PR-NUMBER>
 
 ## Next Steps
 
-1. All initial PRs (1-6) in the [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md) have been completed
+1. All initial PRs (1-6) in the original Narrow Scope POC PR Plan have been completed
 2. The Narrow Scope POC is now ready for demonstration and evaluation
-3. Implement the additional PRs (7-10) as defined in the updated [NARROW_SCOPE_POC_PR_PLAN.md](docs/NARROW_SCOPE_POC_PR_PLAN.md):
-   - PR 7: Supermetrics → CSV Pull Script
-   - PR 8: BigQuery Loader (Optional Warehouse Path)
-   - PR 9: Looker Studio Extract Config (Cached Dataset)
-   - PR 10: Data‐Volume Performance Tests
+3. Implement the Fivetran + BigQuery integration PRs (13-20) as defined in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md):
+   - PR 13: Fivetran API Client
+   - PR 14: Connector Runner (Trigger + Wait)
+   - PR 15: Postgres Extract → CSV Export
+   - PR 16: ETL Runner v2 (`--source fivetran`)
+   - PR 17: S3 Uploader Utility
+   - PR 18: Live ETL Runner (Fivetran → CSV → S3)
+   - PR 19: AWS SES Email Smoke Test
+   - PR 20: Documentation & .env Template
 4. For future development, continue to follow the detailed Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
 5. Any new features or enhancements should be discussed with the team before creating new branches or PRs
 
-## Narrow Scope POC Overview
+## Project Overview
 
-The Narrow Scope POC implementation is divided into two phases:
+The project implementation is divided into three phases:
 
 ### Phase 1: Core Implementation (Completed)
 
@@ -201,14 +205,24 @@ The Narrow Scope POC implementation is divided into two phases:
 5. **PR 5: ETL Runner** - Integrate fetch → normalize → export
 6. **PR 6: README Updates** - Document the POC pipeline
 
-### Phase 2: Extended Functionality (Planned)
+### Phase 2: Fivetran + BigQuery Integration (Current Focus)
 
-7. **PR 7: Supermetrics → CSV Pull Script** - CLI script to pull Klaviyo data via Supermetrics API
-8. **PR 8: BigQuery Loader** - Load Supermetrics-generated data into BigQuery
-9. **PR 9: Looker Studio Extract Config** - Template for Google "Extract Data" connector
-10. **PR 10: Data‐Volume Performance Tests** - Measure fetch time & rows for various date ranges
+13. **PR 13: Fivetran API Client** - Create a client for interacting with the Fivetran API
+14. **PR 14: Connector Runner** - Trigger Fivetran syncs and wait for completion
+15. **PR 15: Postgres Extract → CSV Export** - Extract data from Fivetran's Postgres destination
+16. **PR 16: ETL Runner v2** - Extend ETL runner to support Fivetran as a source
+17. **PR 17: S3 Uploader Utility** - Upload processed data to S3 for archiving
+18. **PR 18: Live ETL Runner** - Implement end-to-end pipeline from Fivetran to S3
+19. **PR 19: AWS SES Email Smoke Test** - Send test emails via AWS SES
+20. **PR 20: Documentation & .env Template** - Update documentation for the new integration
 
-Detailed implementation guides for each PR are available in the `docs/` directory:
+### Phase 3: POC Demo Implementation (Planned)
+
+21. **PR 21: BigQuery Integration** - Load data into BigQuery for analytics
+22. **PR 22: Looker Studio Connection** - Connect Looker Studio to BigQuery
+23. **PR 23: End-to-End Demo Script** - Create a script to run the full demo
+
+Detailed implementation guides for Phase 1 PRs are available in the `docs/` directory:
 
 - `docs/PR1_IMPLEMENTATION_GUIDE.md`
 - `docs/PR2_IMPLEMENTATION_GUIDE.md`
@@ -217,7 +231,7 @@ Detailed implementation guides for each PR are available in the `docs/` director
 - `docs/PR5_IMPLEMENTATION_GUIDE.md`
 - `docs/PR6_IMPLEMENTATION_GUIDE.md`
 
-Implementation details for PRs 7-10 can be found in `docs/more-PRs.md`.
+Implementation details for Phases 2 and 3 can be found in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md).
 
 ---
 
