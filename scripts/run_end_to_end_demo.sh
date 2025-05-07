@@ -13,8 +13,16 @@ LOG_DIR="$ROOT_DIR/logs"
 LOG_FILE="$LOG_DIR/end_to_end_demo_$(date +%Y%m%d_%H%M%S).log"
 
 # Default parameters
-START_DATE=$(date -d "30 days ago" +%Y-%m-%d)
-END_DATE=$(date +%Y-%m-%d)
+# Check if we're on macOS or Linux and set dates accordingly
+if [[ "$(uname)" == "Darwin" ]]; then
+    # macOS date command
+    START_DATE=$(date -v-30d +%Y-%m-%d)
+    END_DATE=$(date +%Y-%m-%d)
+else
+    # Linux date command
+    START_DATE=$(date -d "30 days ago" +%Y-%m-%d)
+    END_DATE=$(date +%Y-%m-%d)
+fi
 DRY_RUN=false
 SKIP_FIVETRAN=false
 SKIP_BIGQUERY=false
@@ -95,12 +103,32 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate dates
-if ! date -d "$START_DATE" > /dev/null 2>&1; then
+validate_date() {
+    local date_str=$1
+    # Extract year, month, and day
+    local year=$(echo "$date_str" | cut -d'-' -f1)
+    local month=$(echo "$date_str" | cut -d'-' -f2)
+    local day=$(echo "$date_str" | cut -d'-' -f3)
+    
+    # Check if the format is correct
+    if [[ ! "$date_str" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+        return 1
+    fi
+    
+    # Check if month and day are valid
+    if [[ "$month" -lt 1 || "$month" -gt 12 || "$day" -lt 1 || "$day" -gt 31 ]]; then
+        return 1
+    fi
+    
+    return 0
+}
+
+if ! validate_date "$START_DATE"; then
     log "Error: Invalid start date format. Use YYYY-MM-DD."
     exit 1
 fi
 
-if ! date -d "$END_DATE" > /dev/null 2>&1; then
+if ! validate_date "$END_DATE"; then
     log "Error: Invalid end date format. Use YYYY-MM-DD."
     exit 1
 fi

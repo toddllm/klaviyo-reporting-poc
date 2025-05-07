@@ -1,0 +1,26 @@
+[2025-05-06 23:19:50] Loading environment variables from .env file
+[2025-05-06 23:19:50] Starting End-to-End Demo
+[2025-05-06 23:19:50] Parameters:
+[2025-05-06 23:19:50]   Start Date: 2025-04-06
+[2025-05-06 23:19:50]   End Date: 2025-05-06
+[2025-05-06 23:19:50]   Report Type: campaign
+[2025-05-06 23:19:50]   Dry Run: true
+[2025-05-06 23:19:50] Step 1: Triggering Fivetran sync
+[2025-05-06 23:19:50] [DRY RUN] Would trigger Fivetran sync for connector test_connector in group test_group
+[2025-05-06 23:19:50] Step 2: Running ETL process
+[2025-05-06 23:19:50] [DRY RUN] Would run ETL process: python -m src.etl_runner --source fivetran --start 2025-04-06 --end 2025-05-06 --output /Users/tdeshane/clara-strategy-session/klaviyo-reporting-poc/data/klaviyo_metrics_20250506_231950.csv --dry-run
+[2025-05-06 23:19:50] Step 3: Uploading processed data to S3
+[2025-05-06 23:19:50] [DRY RUN] Would upload to S3: python -m src.etl_runner --source fivetran --start 2025-04-06 --end 2025-05-06 --output /Users/tdeshane/clara-strategy-session/klaviyo-reporting-poc/data/klaviyo_metrics_20250506_231950.csv --upload-s3 s3://mock-bucket/klaviyo-poc/klaviyo_metrics_2025-04-06_2025-05-06_20250506_231950.csv --dry-run
+[2025-05-06 23:19:50] Step 4: Loading data to BigQuery
+[2025-05-06 23:19:50] [DRY RUN] Would load to BigQuery: python -m src.bq_loader --file /Users/tdeshane/clara-strategy-session/klaviyo-reporting-poc/data/klaviyo_metrics_20250506_231950.csv --report-type campaign --dry-run
+[2025-05-06 23:19:50] Step 5: Generating dashboard link
+[2025-05-06 23:19:50] Dashboard link: https://lookerstudio.google.com/reporting/YOUR_REPORT_ID?params=%7B%22date_range%22:%7B%22start%22:%222025-04-06%22,%22end%22:%222025-05-06%22%7D%7D
+[2025-05-06 23:19:50] Skipping email notification as requested or no email address provided
+[2025-05-06 23:19:50] End-to-End Demo Completed Successfully
+[2025-05-06 23:19:50] Summary:
+[2025-05-06 23:19:50]   Date Range: 2025-04-06 to 2025-05-06
+[2025-05-06 23:19:50]   Report Type: campaign
+[2025-05-06 23:19:50]   Processed Data: /Users/tdeshane/clara-strategy-session/klaviyo-reporting-poc/data/klaviyo_metrics_20250506_231950.csv
+[2025-05-06 23:19:50]   S3 URI: s3://mock-bucket/klaviyo-poc/klaviyo_metrics_2025-04-06_2025-05-06_20250506_231950.csv
+[2025-05-06 23:19:50]   Dashboard Link: https://lookerstudio.google.com/reporting/YOUR_REPORT_ID?params=%7B%22date_range%22:%7B%22start%22:%222025-04-06%22,%22end%22:%222025-05-06%22%7D%7D
+[2025-05-06 23:19:50]   Log File: /Users/tdeshane/clara-strategy-session/klaviyo-reporting-poc/logs/end_to_end_demo_20250506_231950.log
