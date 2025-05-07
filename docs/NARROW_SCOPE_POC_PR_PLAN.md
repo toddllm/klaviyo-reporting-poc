@@ -426,17 +426,28 @@ For Phase 2 (PRs 7-10), the recommended implementation order is:
 
 ## PR 13: AWS SES Bootstrap Script  
 **Branch:** `feature/aws-ses-bootstrap`  
-- [ ] Create `scripts/ses_bootstrap.py`  
+- [x] Create `scripts/ses_bootstrap.py`  
   * Verifies domain (if not already)  
   * Creates/updates an *SMTP‑enabled* IAM user `ses_poc_sender` (least privilege)  
   * Sets up sending identity `$SES_SENDER_EMAIL` and DKIM signing on `$SES_DOMAIN`  
   * Optionally lifts sandbox limitation if credentials allow (skip gracefully otherwise)  
-- [ ] Outputs any required DNS records to stdout for manual confirmation  
-- [ ] Unit tests with `moto` where possible (`tests/test_ses_bootstrap.py`)  
+- [x] Outputs any required DNS records to stdout for manual confirmation  
+- [x] Unit tests with `moto` where possible (`tests/test_ses_bootstrap.py`)  
 
 **Validation**  
 1. `python scripts/ses_bootstrap.py --dry-run` shows planned actions  
 2. Running without `--dry-run` creates identity and prints "✅ SES ready"  
+
+**Merge when these checkboxes are green:**
+- [x] All validation steps passed
+- [x] Code follows project style guidelines
+- [x] Unit tests cover key functionality
+
+**Evidence:**
+- PR #50 merged on May 6, 2025
+- All tests passing: `pytest tests/test_ses_bootstrap.py`
+- Implementation includes domain verification, DKIM setup, email verification, and IAM user creation
+- Dry run functionality works as expected
 
 ---
 
