@@ -131,15 +131,17 @@ def test_main_success(mock_parse_args, mock_write_to_csv, mock_execute_query, mo
 
 @patch("src.postgres_extract_export.get_connection")
 @patch("src.postgres_extract_export.execute_query")
+@patch("src.postgres_extract_export.fetch_last_n_days")
+@patch("src.postgres_extract_export.fetch_to_dataframe")
 @patch("src.postgres_extract_export.argparse.ArgumentParser.parse_args")
-def test_main_dry_run(mock_parse_args, mock_execute_query, mock_get_connection):
+def test_main_dry_run(mock_parse_args, mock_fetch_to_dataframe, mock_fetch_last_n_days, mock_execute_query, mock_get_connection):
     """Test dry-run mode of the main function."""
     # Mock the connection and cursor
     mock_conn = MagicMock()
     mock_get_connection.return_value.__enter__.return_value = mock_conn
     
-    # Mock the query results
-    mock_execute_query.return_value = [
+    # Mock the fetch_to_dataframe to return data
+    mock_fetch_to_dataframe.return_value = [
         {"id": "1", "name": "Test 1", "created_at": "2023-01-01"},
         {"id": "2", "name": "Test 2", "created_at": "2023-02-01"}
     ]
@@ -153,6 +155,7 @@ def test_main_dry_run(mock_parse_args, mock_execute_query, mock_get_connection):
     mock_args.limit = 5
     mock_args.dry_run = True
     mock_args.verbose = False
+    mock_args.fallback_days = 30
     mock_parse_args.return_value = mock_args
     
     # Set environment variables
@@ -169,8 +172,8 @@ def test_main_dry_run(mock_parse_args, mock_execute_query, mock_get_connection):
     # Check that the function returned success
     assert result == 0
     
-    # Check that the query was executed
-    mock_execute_query.assert_called_once()
+    # Check that fetch_to_dataframe was called
+    mock_fetch_to_dataframe.assert_called_once()
     
     # Check that print was called with sample rows
     mock_print.assert_any_call("Sample of 2 rows from 2 total:")
@@ -214,15 +217,17 @@ def test_main_connection_error(mock_parse_args, mock_get_connection):
 
 @patch("src.postgres_extract_export.get_connection")
 @patch("src.postgres_extract_export.execute_query")
+@patch("src.postgres_extract_export.fetch_last_n_days")
 @patch("src.postgres_extract_export.argparse.ArgumentParser.parse_args")
-def test_main_no_results(mock_parse_args, mock_execute_query, mock_get_connection):
+def test_main_no_results(mock_parse_args, mock_fetch_last_n_days, mock_execute_query, mock_get_connection):
     """Test handling of queries with no results."""
     # Mock the connection and cursor
     mock_conn = MagicMock()
     mock_get_connection.return_value.__enter__.return_value = mock_conn
     
-    # Mock the query to return no results
+    # Mock both queries to return no results
     mock_execute_query.return_value = []
+    mock_fetch_last_n_days.return_value = []
     
     # Mock the arguments
     mock_args = MagicMock()
@@ -233,6 +238,7 @@ def test_main_no_results(mock_parse_args, mock_execute_query, mock_get_connectio
     mock_args.limit = None
     mock_args.dry_run = False
     mock_args.verbose = False
+    mock_args.fallback_days = 30
     mock_parse_args.return_value = mock_args
     
     # Set environment variables
@@ -250,4 +256,4 @@ def test_main_no_results(mock_parse_args, mock_execute_query, mock_get_connectio
     assert result == 1
     
     # Check that an error message was printed
-    mock_print.assert_any_call("Query returned no results")
+    mock_print.assert_any_call("Both primary and fallback queries returned no results")
