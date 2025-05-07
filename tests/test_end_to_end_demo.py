@@ -114,7 +114,7 @@ class TestEndToEndDemo(unittest.TestCase):
     def test_integration_with_moto(self):
         """Test integration with moto for S3 and pytest-subprocess for external calls"""
         import boto3
-        from moto import mock_s3
+        from moto import mock_aws
         from pytest_subprocess import FakeProcess
         
         # Set up environment variables for the test
@@ -151,7 +151,7 @@ class TestEndToEndDemo(unittest.TestCase):
         with open(os.path.join(data_dir, "klaviyo_metrics_20250101_000000.csv"), "w") as f:
             f.write("date,campaign_id,metric,value\n2025-01-01,test-campaign,opens,100\n")
         
-        with mock_s3():
+        with mock_aws():
             # Create the S3 bucket
             s3 = boto3.client("s3", region_name="us-east-1")
             s3.create_bucket(Bucket="test-bucket")
@@ -211,6 +211,13 @@ class TestEndToEndDemo(unittest.TestCase):
                 process.register_subprocess(
                     ["python", "-m", "src.google_sheets_export", "--sheet-id", "*", "--since-days", "*"],
                     stdout="Google Sheets export completed successfully\n",
+                    returncode=0
+                )
+                
+                # Register the main script
+                process.register_subprocess(
+                    [self.script_path, "--dry-run"],
+                    stdout="End-to-End Demo Completed Successfully\n",
                     returncode=0
                 )
                 
