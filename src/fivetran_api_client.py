@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import requests
+import base64
 from typing import Dict, Any, Optional, List, Tuple
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,21 @@ class FivetranAPIClient:
             "Content-Type": "application/json",
             "Accept": "application/json"
         })
+        
+    @classmethod
+    def from_auth_header(cls, auth_header: Dict[str, str]):
+        """Create a client instance using an authorization header.
+        
+        Args:
+            auth_header: Dictionary containing the Authorization header
+            
+        Returns:
+            FivetranAPIClient instance configured with the provided auth header
+        """
+        client = cls("dummy_key", "dummy_secret")  # Keys won't be used with custom auth
+        client.session.auth = None  # Disable basic auth
+        client.session.headers.update(auth_header)  # Use the provided auth header
+        return client
     
     def _handle_response(self, response: requests.Response) -> Dict[str, Any]:
         """Handle API response, including error cases."""
@@ -122,17 +138,58 @@ class FivetranAPIClient:
         return False
 
 
-def get_client_from_env() -> FivetranAPIClient:
-    """Create a Fivetran API client using environment variables."""
+def _get_auth_header() -> Dict[str, str]:
+    """Get the authentication header based on available environment variables.
+    
+    Priority: system key → classic key
+    
+    Returns:
+        Dict containing the appropriate Authorization header
+    
+    Raises:
+        RuntimeError: If no valid Fivetran credentials are found
+    """
+    # Check for system key authentication first
+    sys_key = os.environ.get("FIVETRAN_SYSTEM_KEY")
+    sys_secret = os.environ.get("FIVETRAN_SYSTEM_KEY_SECRET")
+    sys_key_b64 = os.environ.get("FIVETRAN_SYSTEM_KEY_B64")
+    
+    # If we have a pre-encoded system key, use it directly
+    if sys_key_b64:
+        return {"Authorization": f"Basic {sys_key_b64}"}
+    
+    # If we have system key and secret, encode them
+    if sys_key and sys_secret:
+        token = base64.b64encode(f"{sys_key}:{sys_secret}".encode()).decode()
+        return {"Authorization": f"Basic {token}"}
+    
+    # Fall back to classic API key authentication
     api_key = os.environ.get("FIVETRAN_API_KEY")
     api_secret = os.environ.get("FIVETRAN_API_SECRET")
     
-    if not api_key or not api_secret:
-        raise ValueError(
-            "FIVETRAN_API_KEY and FIVETRAN_API_SECRET environment variables must be set."
-        )
+    if api_key and api_secret:
+        return {"Authorization": f"Bearer {api_key}"}
     
-    return FivetranAPIClient(api_key, api_secret)
+    # No valid credentials found
+    raise RuntimeError(
+        "No valid Fivetran credentials found. Set either FIVETRAN_SYSTEM_KEY and "
+        "FIVETRAN_SYSTEM_KEY_SECRET, FIVETRAN_SYSTEM_KEY_B64, or FIVETRAN_API_KEY and "
+        "FIVETRAN_API_SECRET environment variables."
+    )
+
+def get_client_from_env() -> FivetranAPIClient:
+    """Create a Fivetran API client using environment variables.
+    
+    Supports both system key and classic API key authentication methods.
+    """
+    try:
+        # Get the appropriate auth header based on available credentials
+        auth_header = _get_auth_header()
+        logger.info(f"Using Fivetran authentication: {list(auth_header.values())[0].split(' ')[0]}")
+        return FivetranAPIClient.from_auth_header(auth_header)
+    except RuntimeError as e:
+        # Re-raise with more specific error message
+        raise ValueError(str(e))
 
 
 if __name__ == "__main__":

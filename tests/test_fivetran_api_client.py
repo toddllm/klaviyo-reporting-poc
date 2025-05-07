@@ -8,6 +8,15 @@ from src.fivetran_api_client import FivetranAPIClient, get_client_from_env
 def fivetran_client():
     return FivetranAPIClient("test_api_key", "test_api_secret")
 
+def test_client_from_auth_header():
+    # Test creating a client from an auth header
+    auth_header = {"Authorization": "Bearer test_token"}
+    client = FivetranAPIClient.from_auth_header(auth_header)
+    
+    # Verify the client is configured correctly
+    assert client.session.auth is None  # Basic auth should be disabled
+    assert client.session.headers["Authorization"] == "Bearer test_token"
+
 @responses.activate
 def test_get_groups(fivetran_client):
     # Mock the API response
@@ -309,21 +318,77 @@ def test_rate_limit_handling(fivetran_client):
     assert groups[0]["name"] == "Test Group 1"
     assert mock_sleep.call_count == 1  # Should sleep once for the rate limit
 
-def test_get_client_from_env():
-    # Mock environment variables
+def test_get_auth_header_system_key():
+    # Test system key authentication
     with patch.dict(os.environ, {
-        "FIVETRAN_API_KEY": "test_key",
-        "FIVETRAN_API_SECRET": "test_secret"
-    }):
-        client = get_client_from_env()
-        assert client.api_key == "test_key"
-        assert client.api_secret == "test_secret"
+        "FIVETRAN_SYSTEM_KEY": "test_system_key",
+        "FIVETRAN_SYSTEM_KEY_SECRET": "test_system_secret"
+    }, clear=True):
+        from src.fivetran_api_client import _get_auth_header
+        header = _get_auth_header()
+        assert "Authorization" in header
+        assert header["Authorization"].startswith("Basic ")
+        # Verify the encoded value is correct
+        import base64
+        expected = base64.b64encode(b"test_system_key:test_system_secret").decode()
+        assert header["Authorization"] == f"Basic {expected}"
+
+def test_get_auth_header_system_key_b64():
+    # Test pre-encoded system key
+    with patch.dict(os.environ, {
+        "FIVETRAN_SYSTEM_KEY_B64": "encoded_system_key"
+    }, clear=True):
+        from src.fivetran_api_client import _get_auth_header
+        header = _get_auth_header()
+        assert "Authorization" in header
+        assert header["Authorization"] == "Basic encoded_system_key"
+
+def test_get_auth_header_api_key():
+    # Test classic API key authentication
+    with patch.dict(os.environ, {
+        "FIVETRAN_API_KEY": "test_api_key",
+        "FIVETRAN_API_SECRET": "test_api_secret"
+    }, clear=True):
+        from src.fivetran_api_client import _get_auth_header
+        header = _get_auth_header()
+        assert "Authorization" in header
+        assert header["Authorization"] == "Bearer test_api_key"
+
+def test_get_auth_header_no_credentials():
+    # Test no credentials
+    with patch.dict(os.environ, {}, clear=True):
+        from src.fivetran_api_client import _get_auth_header
+        with pytest.raises(RuntimeError) as excinfo:
+            _get_auth_header()
+        assert "No valid Fivetran credentials found" in str(excinfo.value)
+
+def test_get_client_from_env_system_key():
+    # Test with system key
+    with patch.dict(os.environ, {
+        "FIVETRAN_SYSTEM_KEY": "test_system_key",
+        "FIVETRAN_SYSTEM_KEY_SECRET": "test_system_secret"
+    }, clear=True):
+        with patch('src.fivetran_api_client.FivetranAPIClient.from_auth_header') as mock_from_auth:
+            get_client_from_env()
+            mock_from_auth.assert_called_once()
+            auth_header = mock_from_auth.call_args[0][0]
+            assert auth_header["Authorization"].startswith("Basic ")
+
+def test_get_client_from_env_api_key():
+    # Test with API key
+    with patch.dict(os.environ, {
+        "FIVETRAN_API_KEY": "test_api_key",
+        "FIVETRAN_API_SECRET": "test_api_secret"
+    }, clear=True):
+        with patch('src.fivetran_api_client.FivetranAPIClient.from_auth_header') as mock_from_auth:
+            get_client_from_env()
+            mock_from_auth.assert_called_once()
+            auth_header = mock_from_auth.call_args[0][0]
+            assert auth_header["Authorization"] == "Bearer test_api_key"
 
 def test_get_client_from_env_missing_vars():
-    # Mock environment variables (missing API secret)
-    with patch.dict(os.environ, {
-        "FIVETRAN_API_KEY": "test_key"
-    }, clear=True):
+    # Test with no credentials
+    with patch.dict(os.environ, {}, clear=True):
         with pytest.raises(ValueError) as excinfo:
             get_client_from_env()
-        assert "FIVETRAN_API_KEY and FIVETRAN_API_SECRET environment variables must be set" in str(excinfo.value)
+        assert "No valid Fivetran credentials found" in str(excinfo.value)
