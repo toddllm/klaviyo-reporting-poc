@@ -86,7 +86,7 @@ Expect **all phases to pass**; the Looker dashboard should load and screenshots 
 | ---------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------ |
 | **PR 28**              | `bugfix/bq_view_and_deploy`           | • Rewrite `sql/create_reporting_view.sql` <br>• Update `scripts/deploy_reporting_view.sh` <br>• Add `make deploy_view` target | ✅ Completed |
 | **PR 29**              | `bugfix/etl_import_and_empty_extract` | • Add path patch in `src/__init__.py` <br>• Improve empty-extract handling & logging                                          | ✅ Completed |
-| **PR 30**              | `chore/env_examples_and_docs`         | • Add `.env.example` <br>• Update `docs/setup.md` with env checklist                                                          | 🔄 In Progress |
+| **PR 30**              | `chore/env_examples_and_docs`         | • Add `.env.example` <br>• Update `docs/setup.md` with env checklist                                                          | ✅ Completed |
 | **PR 31** *(optional)* | `chore/remove_flow_from_smoke`        | • Trim `flow` from required tables list                                                                                       | ⏳ Not Started |
 
 After those merge, re-run **`make smoke_test`**.
