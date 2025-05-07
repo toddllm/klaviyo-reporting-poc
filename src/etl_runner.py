@@ -11,6 +11,7 @@ from typing import Optional, List, Dict, Any, Union
 # Import from other modules
 from src.klaviyo_api_ingest import fetch_all_campaigns, fetch_campaign_metrics
 from src.lookml_field_mapper import normalize_records
+from src.s3_uploader import upload_file
 from src.utils.s3_uploader import upload_csv_to_s3
 from src.fivetran_connector_runner import run_connector
 from src.postgres_extract_export import fetch_to_dataframe, fetch_and_export_to_csv
@@ -194,7 +195,8 @@ def run_etl(dry_run=False, output_file=None, format="csv", source="klaviyo",
         source: Data source (klaviyo, supermetrics, or fivetran)
         start_date: Start date for data extraction (required for supermetrics and fivetran)
         end_date: End date for data extraction (required for supermetrics and fivetran)
-        upload_to_s3: If True, upload the output file to S3
+        upload_to_s3: If True, upload the output file to S3. If a string, it should be an S3 URI template
+                     that can include {start} and {end} placeholders.
         keep_local: If True, keep the local output file after S3 upload
         group_id: Fivetran group ID (overrides env var FIVETRAN_GROUP_ID)
         connector_id: Fivetran connector ID (overrides env var FIVETRAN_CONNECTOR_ID)
@@ -234,12 +236,40 @@ def run_etl(dry_run=False, output_file=None, format="csv", source="klaviyo",
         # Upload to S3 if requested
         if upload_to_s3 and not dry_run:
             try:
-                # Generate S3 key using start_date
+                # Get date strings for template substitution
                 date_str = start_date if start_date else datetime.now().strftime("%Y-%m-%d")
-                s3_key = f"klaviyo_export_{date_str}.csv"
+                end_str = end_date if end_date else date_str
                 
-                # Upload to S3
-                s3_uri = upload_csv_to_s3(output_file, s3_key)
+                # Handle the case where upload_to_s3 is an S3 URI template
+                if isinstance(upload_to_s3, str) and upload_to_s3.startswith("s3://"):
+                    # Parse the S3 URI template
+                    s3_uri_template = upload_to_s3
+                    
+                    # Replace placeholders with actual values
+                    s3_uri = s3_uri_template.format(start=date_str, end=end_str)
+                    
+                    # Extract bucket and key from the URI
+                    if not s3_uri.startswith("s3://"):
+                        raise ValueError(f"Invalid S3 URI: {s3_uri}. Must start with 's3://'")
+                    
+                    parts = s3_uri[5:].split("/", 1)
+                    if len(parts) != 2:
+                        raise ValueError(f"Invalid S3 URI: {s3_uri}. Must be in format 's3://bucket/key'")
+                    
+                    bucket, key = parts
+                    
+                    # Upload to S3 using the parsed bucket and key
+                    s3_uri = upload_file(output_file, bucket, key)
+                else:
+                    # Generate default S3 key using start_date and end_date if available
+                    if end_date:
+                        s3_key = f"klaviyo_export_{date_str}_{end_str}.csv"
+                    else:
+                        s3_key = f"klaviyo_export_{date_str}.csv"
+                    
+                    # Upload to S3 using the default key
+                    s3_uri = upload_csv_to_s3(output_file, s3_key)
+                
                 print(f"File uploaded to {s3_uri}")
                 
                 # Remove local file if not keeping it
@@ -277,7 +307,7 @@ def main(argv=None):
                         help="Data source to extract from")
     parser.add_argument("--start", help="Start date in YYYY-MM-DD format (required for supermetrics and fivetran)")
     parser.add_argument("--end", help="End date in YYYY-MM-DD format (required for supermetrics and fivetran)")
-    parser.add_argument("--upload-to-s3", action="store_true", help="Upload the output file to S3")
+    parser.add_argument("--upload-to-s3", nargs="?", const=True, help="Upload the output file to S3. Can be used as a flag or with an S3 URI (e.g., s3://bucket/prefix/{start}_{end}.csv)")
     parser.add_argument("--keep-local", action="store_true", default=True, help="Keep the local output file after S3 upload")
     parser.add_argument("--supermetrics-legacy", action="store_true", help="Prepare data for Supermetrics integration (legacy)")
     
@@ -297,6 +327,16 @@ def main(argv=None):
     if args.source == "fivetran" and (not args.start or not args.end):
         parser.error("--start and --end are required when using --source fivetran")
     
+    # Handle the upload_to_s3 argument
+    upload_to_s3 = args.upload_to_s3
+    if upload_to_s3 is True:
+        # If used as a flag, set to True
+        upload_to_s3 = True
+    elif isinstance(upload_to_s3, str):
+        # If provided as a string, use it as an S3 URI template
+        if not upload_to_s3.startswith("s3://"):
+            parser.error("--upload-to-s3 value must be an S3 URI starting with 's3://'")
+    
     # Run the ETL process
     success = run_etl(
         dry_run=args.dry_run,
@@ -305,7 +345,7 @@ def main(argv=None):
         source=args.source,
         start_date=args.start,
         end_date=args.end,
-        upload_to_s3=args.upload_to_s3,
+        upload_to_s3=upload_to_s3,
         keep_local=args.keep_local,
         group_id=args.group_id,
         connector_id=args.connector_id,
