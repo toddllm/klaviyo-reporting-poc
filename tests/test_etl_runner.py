@@ -17,6 +17,7 @@ unittest.mock.patch.dict('sys.modules', {
 
 from src.etl_runner import (
     extract,
+    extract_fivetran,
     transform,
     load,
     write_to_csv,
@@ -114,6 +115,77 @@ def test_extract(mock_sleep, mock_fetch_metrics, mock_fetch_campaigns):
     assert mock_fetch_campaigns.call_count == 1
     assert mock_fetch_metrics.call_count == 2
     assert mock_sleep.call_count == 2
+
+# Test extract_fivetran function
+@patch("src.etl_runner.run_connector")
+@patch("src.etl_runner.fetch_to_dataframe")
+@patch.dict(os.environ, {"FIVETRAN_GROUP_ID": "test_group", "FIVETRAN_CONNECTOR_ID": "test_connector"})
+def test_extract_fivetran(mock_fetch_to_dataframe, mock_run_connector):
+    # Mock the function calls
+    mock_run_connector.return_value = True
+    mock_fetch_to_dataframe.return_value = SAMPLE_RAW_DATA
+    
+    # Call the function
+    result = extract_fivetran("2025-05-01", "2025-05-31", dry_run=True)
+    
+    # Assertions
+    assert result == SAMPLE_RAW_DATA
+    mock_run_connector.assert_called_once_with("test_group", "test_connector", dry_run=True)
+    mock_fetch_to_dataframe.assert_called_once_with(
+        table="klaviyo_campaigns",
+        start_date="2025-05-01",
+        end_date="2025-05-31",
+        date_column=None,
+        dry_run=True
+    )
+
+# Test extract_fivetran with custom parameters
+@patch("src.etl_runner.run_connector")
+@patch("src.etl_runner.fetch_to_dataframe")
+def test_extract_fivetran_custom_params(mock_fetch_to_dataframe, mock_run_connector):
+    # Mock the function calls
+    mock_run_connector.return_value = True
+    mock_fetch_to_dataframe.return_value = SAMPLE_RAW_DATA
+    
+    # Call the function with custom parameters
+    result = extract_fivetran(
+        "2025-05-01", 
+        "2025-05-31", 
+        group_id="custom_group", 
+        connector_id="custom_connector",
+        table="custom_table",
+        date_column="custom_date",
+        dry_run=True
+    )
+    
+    # Assertions
+    assert result == SAMPLE_RAW_DATA
+    mock_run_connector.assert_called_once_with("custom_group", "custom_connector", dry_run=True)
+    mock_fetch_to_dataframe.assert_called_once_with(
+        table="custom_table",
+        start_date="2025-05-01",
+        end_date="2025-05-31",
+        date_column="custom_date",
+        dry_run=True
+    )
+
+# Test extract_fivetran with missing parameters
+@patch.dict(os.environ, {}, clear=True)
+def test_extract_fivetran_missing_params():
+    # Call the function without required parameters
+    with pytest.raises(ValueError, match="Fivetran group ID and connector ID must be provided"):
+        extract_fivetran("2025-05-01", "2025-05-31", dry_run=True)
+
+# Test extract_fivetran with connector failure
+@patch("src.etl_runner.run_connector")
+@patch.dict(os.environ, {"FIVETRAN_GROUP_ID": "test_group", "FIVETRAN_CONNECTOR_ID": "test_connector"})
+def test_extract_fivetran_connector_failure(mock_run_connector):
+    # Mock the connector to fail
+    mock_run_connector.return_value = False
+    
+    # Call the function
+    with pytest.raises(RuntimeError, match="Fivetran sync failed"):
+        extract_fivetran("2025-05-01", "2025-05-31")
 
 # Test transform function
 @patch("src.etl_runner.normalize_records")
@@ -250,7 +322,45 @@ def test_run_etl_success(mock_load, mock_transform, mock_extract):
     
     # Assertions
     assert result is True
-    mock_extract.assert_called_once_with(True)
+    mock_extract.assert_called_once_with("klaviyo", None, None, None, None, None, None, True)
+    mock_transform.assert_called_once_with(SAMPLE_RAW_DATA)
+    mock_load.assert_called_once()
+
+# Test run_etl function with fivetran source
+@patch("src.etl_runner.extract")
+@patch("src.etl_runner.transform")
+@patch("src.etl_runner.load")
+def test_run_etl_fivetran_success(mock_load, mock_transform, mock_extract):
+    # Mock the functions
+    mock_extract.return_value = SAMPLE_RAW_DATA
+    mock_transform.return_value = SAMPLE_TRANSFORMED_DATA
+    mock_load.return_value = True
+    
+    # Call the function with fivetran source
+    result = run_etl(
+        dry_run=True, 
+        output_file="test.csv", 
+        source="fivetran",
+        start_date="2025-05-01",
+        end_date="2025-05-31",
+        group_id="test_group",
+        connector_id="test_connector",
+        table="test_table",
+        date_column="test_date"
+    )
+    
+    # Assertions
+    assert result is True
+    mock_extract.assert_called_once_with(
+        "fivetran", 
+        "2025-05-01", 
+        "2025-05-31", 
+        "test_group", 
+        "test_connector", 
+        "test_table", 
+        "test_date", 
+        True
+    )
     mock_transform.assert_called_once_with(SAMPLE_RAW_DATA)
     mock_load.assert_called_once()
 
@@ -265,7 +375,7 @@ def test_run_etl_extract_failure(mock_extract):
     
     # Assertions
     assert result is False
-    mock_extract.assert_called_once_with(True)
+    mock_extract.assert_called_once_with("klaviyo", None, None, None, None, None, None, True)
 
 # Test run_etl function with transform failure
 @patch("src.etl_runner.extract")
@@ -280,7 +390,7 @@ def test_run_etl_transform_failure(mock_transform, mock_extract):
     
     # Assertions
     assert result is False
-    mock_extract.assert_called_once_with(True)
+    mock_extract.assert_called_once_with("klaviyo", None, None, None, None, None, None, True)
     mock_transform.assert_called_once_with(SAMPLE_RAW_DATA)
 
 # Test run_etl function with load failure
@@ -298,7 +408,7 @@ def test_run_etl_load_failure(mock_load, mock_transform, mock_extract):
     
     # Assertions
     assert result is False
-    mock_extract.assert_called_once_with(True)
+    mock_extract.assert_called_once_with("klaviyo", None, None, None, None, None, None, True)
     mock_transform.assert_called_once_with(SAMPLE_RAW_DATA)
     mock_load.assert_called_once()
 

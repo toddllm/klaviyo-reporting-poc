@@ -6,12 +6,14 @@ import csv
 import time
 import sys
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 
 # Import from other modules
 from src.klaviyo_api_ingest import fetch_all_campaigns, fetch_campaign_metrics
 from src.lookml_field_mapper import normalize_records
 from src.utils.s3_uploader import upload_csv_to_s3
+from src.fivetran_connector_runner import run_connector
+from src.postgres_extract_export import fetch_to_dataframe, fetch_and_export_to_csv
 
 # Constants
 DEFAULT_OUTPUT_DIR = "data"
@@ -52,7 +54,60 @@ def extract_supermetrics(start_date: str, end_date: str, dry_run=False):
     
     return data
 
-def extract(source="klaviyo", start_date=None, end_date=None, dry_run=False):
+def extract_fivetran(start_date: str, end_date: str, group_id: Optional[str] = None, 
+                   connector_id: Optional[str] = None, table: Optional[str] = None, 
+                   date_column: Optional[str] = None, dry_run=False) -> List[Dict[str, Any]]:
+    """Extract data using Fivetran
+    
+    Args:
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+        group_id: Fivetran group ID (overrides env var FIVETRAN_GROUP_ID)
+        connector_id: Fivetran connector ID (overrides env var FIVETRAN_CONNECTOR_ID)
+        table: Postgres table name (overrides env var FIVETRAN_TABLE)
+        date_column: Date column for filtering (default from postgres_extract_export)
+        dry_run: If True, don't make actual API calls
+        
+    Returns:
+        List of dictionaries containing the extracted data
+    """
+    print(f"Extracting data via Fivetran for period {start_date} to {end_date}...")
+    
+    # Get Fivetran credentials from env vars or parameters
+    group_id = group_id or os.environ.get("FIVETRAN_GROUP_ID")
+    connector_id = connector_id or os.environ.get("FIVETRAN_CONNECTOR_ID")
+    
+    if not group_id or not connector_id:
+        raise ValueError("Fivetran group ID and connector ID must be provided via environment variables or parameters")
+    
+    # Get table name from env var or parameter, default to klaviyo_campaigns
+    table = table or os.environ.get("FIVETRAN_TABLE", "klaviyo_campaigns")
+    
+    # Step 1: Trigger Fivetran sync
+    print(f"Triggering Fivetran sync for connector {connector_id} in group {group_id}...")
+    sync_success = run_connector(group_id, connector_id, dry_run=dry_run)
+    if not sync_success and not dry_run:
+        raise RuntimeError("Fivetran sync failed")
+    if not dry_run:
+        print("Fivetran sync completed successfully")
+    else:
+        print("DRY RUN: Skipping actual Fivetran sync")
+    
+    # Step 2: Extract data from Postgres
+    print(f"Extracting data from Postgres table {table}...")
+    data = fetch_to_dataframe(
+        table=table,
+        start_date=start_date,
+        end_date=end_date,
+        date_column=date_column,
+        dry_run=dry_run
+    )
+    
+    print(f"Fetched {len(data)} records from Postgres")
+    return data
+
+def extract(source="klaviyo", start_date=None, end_date=None, group_id=None, 
+           connector_id=None, table=None, date_column=None, dry_run=False):
     """Extract data from the specified source"""
     if source == "klaviyo":
         return extract_klaviyo(dry_run)
@@ -60,6 +115,10 @@ def extract(source="klaviyo", start_date=None, end_date=None, dry_run=False):
         if not start_date or not end_date:
             raise ValueError("Supermetrics source requires start_date and end_date parameters")
         return extract_supermetrics(start_date, end_date, dry_run)
+    elif source == "fivetran":
+        if not start_date or not end_date:
+            raise ValueError("Fivetran source requires start_date and end_date parameters")
+        return extract_fivetran(start_date, end_date, group_id, connector_id, table, date_column, dry_run)
     else:
         raise ValueError(f"Unsupported source: {source}")
 
@@ -123,18 +182,24 @@ def write_to_json(data, output_file):
         print(f"Error writing to JSON: {e}")
         return False
 
-def run_etl(dry_run=False, output_file=None, format="csv", source="klaviyo", start_date=None, end_date=None, upload_to_s3=False, keep_local=True):
+def run_etl(dry_run=False, output_file=None, format="csv", source="klaviyo", 
+          start_date=None, end_date=None, upload_to_s3=False, keep_local=True,
+          group_id=None, connector_id=None, table=None, date_column=None):
     """Run the full ETL process
     
     Args:
         dry_run: If True, don't make actual API calls
         output_file: Path to output file. If None, a default path is used
         format: Output format (csv or json)
-        source: Data source (klaviyo or supermetrics)
-        start_date: Start date for data extraction (required for supermetrics)
-        end_date: End date for data extraction (required for supermetrics)
+        source: Data source (klaviyo, supermetrics, or fivetran)
+        start_date: Start date for data extraction (required for supermetrics and fivetran)
+        end_date: End date for data extraction (required for supermetrics and fivetran)
         upload_to_s3: If True, upload the output file to S3
         keep_local: If True, keep the local output file after S3 upload
+        group_id: Fivetran group ID (overrides env var FIVETRAN_GROUP_ID)
+        connector_id: Fivetran connector ID (overrides env var FIVETRAN_CONNECTOR_ID)
+        table: Postgres table name (overrides env var FIVETRAN_TABLE)
+        date_column: Date column for filtering (default from postgres_extract_export)
         
     Returns:
         True if successful, False otherwise
@@ -147,7 +212,7 @@ def run_etl(dry_run=False, output_file=None, format="csv", source="klaviyo", sta
     
     try:
         # Extract
-        raw_data = extract(source, start_date, end_date, dry_run)
+        raw_data = extract(source, start_date, end_date, group_id, connector_id, table, date_column, dry_run)
         if not raw_data:
             print("No data extracted. ETL process failed.")
             return False
@@ -208,18 +273,29 @@ def main(argv=None):
     parser.add_argument("--dry-run", action="store_true", help="Perform a dry run without making actual API calls")
     parser.add_argument("--output", help="Output file path")
     parser.add_argument("--format", choices=["csv", "json"], default="csv", help="Output format")
-    parser.add_argument("--source", choices=["klaviyo", "supermetrics"], default="klaviyo", help="Data source to extract from")
-    parser.add_argument("--start", help="Start date in YYYY-MM-DD format (required for supermetrics)")
-    parser.add_argument("--end", help="End date in YYYY-MM-DD format (required for supermetrics)")
+    parser.add_argument("--source", choices=["klaviyo", "supermetrics", "fivetran"], default="klaviyo", 
+                        help="Data source to extract from")
+    parser.add_argument("--start", help="Start date in YYYY-MM-DD format (required for supermetrics and fivetran)")
+    parser.add_argument("--end", help="End date in YYYY-MM-DD format (required for supermetrics and fivetran)")
     parser.add_argument("--upload-to-s3", action="store_true", help="Upload the output file to S3")
     parser.add_argument("--keep-local", action="store_true", default=True, help="Keep the local output file after S3 upload")
     parser.add_argument("--supermetrics-legacy", action="store_true", help="Prepare data for Supermetrics integration (legacy)")
+    
+    # Fivetran-specific arguments
+    fivetran_group = parser.add_argument_group('Fivetran options')
+    fivetran_group.add_argument("--group-id", help="Fivetran group ID (overrides FIVETRAN_GROUP_ID env var)")
+    fivetran_group.add_argument("--connector-id", help="Fivetran connector ID (overrides FIVETRAN_CONNECTOR_ID env var)")
+    fivetran_group.add_argument("--table", help="Postgres table name (overrides FIVETRAN_TABLE env var)")
+    fivetran_group.add_argument("--date-column", help="Date column for filtering")
     
     args = parser.parse_args(argv)
     
     # Validate arguments
     if args.source == "supermetrics" and (not args.start or not args.end):
         parser.error("--start and --end are required when using --source supermetrics")
+    
+    if args.source == "fivetran" and (not args.start or not args.end):
+        parser.error("--start and --end are required when using --source fivetran")
     
     # Run the ETL process
     success = run_etl(
@@ -230,7 +306,11 @@ def main(argv=None):
         start_date=args.start,
         end_date=args.end,
         upload_to_s3=args.upload_to_s3,
-        keep_local=args.keep_local
+        keep_local=args.keep_local,
+        group_id=args.group_id,
+        connector_id=args.connector_id,
+        table=args.table,
+        date_column=args.date_column
     )
     
     # Prepare for Supermetrics if requested (legacy support)

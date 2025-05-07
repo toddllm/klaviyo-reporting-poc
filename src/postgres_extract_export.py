@@ -5,7 +5,7 @@ import csv
 import argparse
 import logging
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -111,7 +111,92 @@ def generate_output_filename(table: str, start_date: Optional[str] = None, end_d
     return os.path.join(DEFAULT_OUTPUT_DIR, f"{table}_export_{date_part}.csv")
 
 
-def main():
+def fetch_to_dataframe(table: str = DEFAULT_TABLE, 
+                     start_date: Optional[str] = None, 
+                     end_date: Optional[str] = None,
+                     date_column: str = DEFAULT_DATE_COLUMN,
+                     limit: Optional[int] = None,
+                     dry_run: bool = False) -> List[Dict[str, Any]]:
+    """Fetch data from Postgres and return as a list of dictionaries.
+    
+    This function can be imported and called directly from other modules.
+    
+    Args:
+        table: Table name to query
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+        date_column: Column name to use for date filtering
+        limit: Maximum number of rows to return
+        dry_run: If True, print query but don't execute it
+        
+    Returns:
+        List of dictionaries representing the query results
+    """
+    try:
+        # Build the query
+        query = build_query(table, start_date, end_date, date_column, limit)
+        
+        if dry_run:
+            logger.info(f"DRY RUN: Would execute query: {query}")
+            return []
+        
+        # Connect to the database and execute the query
+        with get_connection() as conn:
+            results = execute_query(conn, query)
+        
+        logger.info(f"Fetched {len(results)} rows from {table}")
+        return results
+    
+    except Exception as e:
+        logger.error(f"Error fetching data: {e}")
+        raise
+
+
+def fetch_and_export_to_csv(table: str = DEFAULT_TABLE,
+                         start_date: Optional[str] = None,
+                         end_date: Optional[str] = None,
+                         date_column: str = DEFAULT_DATE_COLUMN,
+                         output_file: Optional[str] = None,
+                         dry_run: bool = False) -> str:
+    """Fetch data from Postgres and export to CSV.
+    
+    This function can be imported and called directly from other modules.
+    
+    Args:
+        table: Table name to query
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+        date_column: Column name to use for date filtering
+        output_file: Path to output file. If None, a default path is generated
+        dry_run: If True, don't actually write to file
+        
+    Returns:
+        Path to the output CSV file
+    """
+    # Fetch data
+    results = fetch_to_dataframe(table, start_date, end_date, date_column, dry_run=dry_run)
+    
+    if not results and not dry_run:
+        logger.warning("Query returned no results")
+        raise ValueError("Query returned no results")
+    
+    # Generate output filename if not provided
+    if not output_file:
+        output_file = generate_output_filename(table, start_date, end_date)
+    
+    # In dry-run mode, just return the output path
+    if dry_run:
+        logger.info(f"DRY RUN: Would write {len(results) if results else 0} rows to {output_file}")
+        return output_file
+    
+    # Write to CSV
+    write_to_csv(results, output_file)
+    logger.info(f"Exported {len(results)} rows to {output_file}")
+    
+    return output_file
+
+
+def main(argv=None):
     """Main function to extract data from Postgres and export to CSV."""
     parser = argparse.ArgumentParser(description="Extract data from Postgres and export to CSV")
     parser.add_argument("--table", default=DEFAULT_TABLE, help=f"Table name (default: {DEFAULT_TABLE})")
@@ -120,30 +205,26 @@ def main():
     parser.add_argument("--date-column", default=DEFAULT_DATE_COLUMN, 
                         help=f"Date column for filtering (default: {DEFAULT_DATE_COLUMN})")
     parser.add_argument("--limit", type=int, help="Limit the number of rows returned")
+    parser.add_argument("--output", help="Output file path")
     parser.add_argument("--dry-run", action="store_true", help="Print sample rows without writing to file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
     
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     
     # Configure logging
     log_level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     
     try:
-        # Build the query
-        query = build_query(
+        # Fetch data
+        results = fetch_to_dataframe(
             args.table, 
             args.start, 
             args.end, 
             args.date_column, 
-            args.limit if args.dry_run else None
+            args.limit if args.dry_run else None,
+            args.dry_run
         )
-        
-        logger.debug(f"Executing query: {query}")
-        
-        # Connect to the database and execute the query
-        with get_connection() as conn:
-            results = execute_query(conn, query)
         
         if not results:
             logger.warning("Query returned no results")
@@ -161,7 +242,7 @@ def main():
             return 0
         
         # Generate output filename and write to CSV
-        output_file = generate_output_filename(args.table, args.start, args.end)
+        output_file = args.output or generate_output_filename(args.table, args.start, args.end)
         write_to_csv(results, output_file)
         print(f"Exported {len(results)} rows to {output_file}")
         return 0
