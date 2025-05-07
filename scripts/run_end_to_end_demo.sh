@@ -27,8 +27,10 @@ DRY_RUN=false
 SKIP_FIVETRAN=false
 SKIP_BIGQUERY=false
 SKIP_EMAIL=false
+SKIP_SHEETS=false
 NOTIFY_EMAIL=""
 REPORT_TYPE="campaign"
+SINCE_DAYS=${DEMO_DEFAULT_SINCE_DAYS:-30}
 
 # Create log directory if it doesn't exist
 mkdir -p "$LOG_DIR"
@@ -51,8 +53,10 @@ usage() {
     echo "  --skip-fivetran           Skip the Fivetran sync step"
     echo "  --skip-bigquery          Skip the BigQuery load step"
     echo "  --skip-email             Skip sending email notification"
+    echo "  --skip-sheets            Skip Google Sheets export"
     echo "  --notify-email EMAIL     Email address to send notification to"
     echo "  --report-type TYPE       Type of report to generate (campaign or events, default: campaign)"
+    echo "  --since-days DAYS        Number of days to look back for data (default: 30)"
     echo "  --help                   Display this help message"
     exit 1
 }
@@ -84,12 +88,20 @@ while [[ $# -gt 0 ]]; do
             SKIP_EMAIL=true
             shift
             ;;
+        --skip-sheets)
+            SKIP_SHEETS=true
+            shift
+            ;;
         --notify-email)
             NOTIFY_EMAIL="$2"
             shift 2
             ;;
         --report-type)
             REPORT_TYPE="$2"
+            shift 2
+            ;;
+        --since-days)
+            SINCE_DAYS="$2"
             shift 2
             ;;
         --help)
@@ -305,9 +317,41 @@ DASHBOARD_LINK="$DASHBOARD_URL?params=%7B%22date_range%22:%7B%22start%22:%22$STA
 
 log "Dashboard link: $DASHBOARD_LINK"
 
-# Step 6: Send email notification
+# Step 6: Export to Google Sheets (Optional)
+if [ "$SKIP_SHEETS" = false ]; then
+    log "Step 6: Exporting data to Google Sheets"
+    
+    # Check if Google Sheet ID is set
+    if [ -z "${GOOGLE_SHEET_ID}" ]; then
+        log "Warning: GOOGLE_SHEET_ID environment variable is not set. Skipping Google Sheets export."
+    else
+        SHEETS_CMD="python -m src.google_sheets_export --sheet-id \"${GOOGLE_SHEET_ID}\" --since-days ${SINCE_DAYS}"
+        
+        if [ "$DRY_RUN" = true ]; then
+            SHEETS_CMD="$SHEETS_CMD --dry-run"
+            log "[DRY RUN] Would export to Google Sheets: $SHEETS_CMD"
+        else
+            log "Exporting to Google Sheets: $SHEETS_CMD"
+            eval $SHEETS_CMD
+            
+            if [ $? -ne 0 ]; then
+                log "Warning: Google Sheets export failed, but continuing with the demo"
+                SHEETS_URL="N/A (export failed)"
+            else
+                SHEETS_URL="https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/edit"
+                log "Google Sheets export completed successfully"
+                log "Sheets URL: $SHEETS_URL"
+            fi
+        fi
+    fi
+else
+    log "Skipping Google Sheets export as requested"
+    SHEETS_URL="N/A (skipped)"
+fi
+
+# Step 7: Send email notification
 if [ "$SKIP_EMAIL" = false ] && [ -n "$NOTIFY_EMAIL" ]; then
-    log "Step 6: Sending email notification"
+    log "Step 7: Sending email notification"
     
     EMAIL_SUBJECT="Klaviyo Reporting POC: Data Pipeline Complete ($START_DATE to $END_DATE)"
     EMAIL_BODY="The Klaviyo Reporting POC data pipeline has completed successfully.\n\n"
@@ -317,7 +361,8 @@ if [ "$SKIP_EMAIL" = false ] && [ -n "$NOTIFY_EMAIL" ]; then
     EMAIL_BODY+="1. Fivetran sync: ${SKIP_FIVETRAN:-Completed}\n"
     EMAIL_BODY+="2. ETL process: Completed\n"
     EMAIL_BODY+="3. S3 upload: Completed ($S3_URI)\n"
-    EMAIL_BODY+="4. BigQuery load: ${SKIP_BIGQUERY:-Completed}\n\n"
+    EMAIL_BODY+="4. BigQuery load: ${SKIP_BIGQUERY:-Completed}\n"
+    EMAIL_BODY+="5. Google Sheets export: ${SHEETS_URL:-N/A}\n\n"
     EMAIL_BODY+="Dashboard Link: $DASHBOARD_LINK\n\n"
     EMAIL_BODY+="For more details, please check the log file: $LOG_FILE"
     
@@ -349,11 +394,15 @@ log "  Processed Data: $PROCESSED_CSV"
 log "  S3 URI: $S3_URI"
 log "  BigQuery Tables Checked: ${SANITY_TABLES:-"Not checked (dry run or skipped)"}"
 log "  Dashboard Link: $DASHBOARD_LINK"
+log "  Google Sheets: ${SHEETS_URL:-"Not exported"}"
 log "  Log File: $LOG_FILE"
 
 echo ""
-echo "End-to-End Demo Completed Successfully"
-echo "Dashboard Link: $DASHBOARD_LINK"
-echo "For more details, check the log file: $LOG_FILE"
+echo "✅ End-to-End Demo Completed Successfully"
+echo "📊 Dashboard Link: $DASHBOARD_LINK"
+if [ "$SKIP_SHEETS" = false ] && [ -n "$SHEETS_URL" ] && [ "$SHEETS_URL" != "N/A (skipped)" ] && [ "$SHEETS_URL" != "N/A (export failed)" ]; then
+    echo "📝 Google Sheets: $SHEETS_URL"
+fi
+echo "📋 For more details, check the log file: $LOG_FILE"
 
 exit 0
