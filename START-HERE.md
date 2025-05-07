@@ -10,6 +10,8 @@
 
 **LATEST: A new batch of PRs has been defined for implementing BigQuery sanity checks. See [BQ_SANITY_PR_PLAN.md](docs/BQ_SANITY_PR_PLAN.md) for details.**
 
+**NEW DEMO-READY PLAN: A client-facing demo plan has been created with PRs 22-26 to build a complete reporting solution. See [DEMO_READY_PR_PLAN.md](docs/DEMO_READY_PR_PLAN.md) for details.**
+
 The Narrow Scope POC has been successfully implemented according to the initial PR plan. All 6 initial PRs have been merged and the implementation is now ready for demonstration. The project is now moving to a Fivetran + BigQuery integration approach as defined in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md), which replaces the previously planned Supermetrics integration.
 
 ## Overview
@@ -56,11 +58,16 @@ We are currently implementing the Fivetran + BigQuery integration as defined in 
 
 After completing the Fivetran + BigQuery integration, we will implement the BigQuery sanity checks as defined in [BQ_SANITY_PR_PLAN.md](docs/BQ_SANITY_PR_PLAN.md). This plan introduces an automated BigQuery sanity-check step that can run locally, as part of the end-to-end demo, and in CI.
 
+### Demo-Ready PR Plan
+
+To prepare for client-facing demonstrations, we have defined a new set of PRs (22-26) in [DEMO_READY_PR_PLAN.md](docs/DEMO_READY_PR_PLAN.md). This plan focuses on creating a complete reporting solution with BigQuery views, Looker Studio dashboards, and optional Google Sheets exports that can be used to demonstrate the value of our solution to clients.
+
 ### Steps for Working on a PR
 
 1. **Check the PR Plan**: Review the appropriate PR plan document to identify the next PR to work on.
    - For Fivetran + BigQuery integration: [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md)
    - For BigQuery sanity checks: [BQ_SANITY_PR_PLAN.md](docs/BQ_SANITY_PR_PLAN.md)
+   - For client-facing demo preparation: [DEMO_READY_PR_PLAN.md](docs/DEMO_READY_PR_PLAN.md)
    - Look for PRs that don't have checkmarks (`[ ]` instead of `[x]`)
    - Check if there's a specific branch name specified in the PR plan
 
@@ -204,12 +211,18 @@ gh pr view <PR-NUMBER>
    - PR: Hook Sanity Check into End-to-End Demo
    - PR: CI Job: Nightly Sanity Check
    - PR: Docs & Env Template Update
-5. For future development, continue to follow the detailed Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
-6. Any new features or enhancements should be discussed with the team before creating new branches or PRs
+5. Implement the Demo-Ready PRs (22-26) as defined in [DEMO_READY_PR_PLAN.md](docs/DEMO_READY_PR_PLAN.md):
+   - PR 22: BigQuery Reporting View + Permissions
+   - PR 23: Looker Studio Template JSON
+   - PR 24: Google Sheets Exporter (Optional Upsell)
+   - PR 25: Demo Orchestrator v2
+   - PR 26: Client Demo Docs & Slide Deck
+6. For future development, continue to follow the detailed Git workflow guidelines in [docs/git_workflow.md](docs/git_workflow.md)
+7. Any new features or enhancements should be discussed with the team before creating new branches or PRs
 
 ## Project Overview
 
-The project implementation is divided into three phases:
+The project implementation is divided into four phases:
 
 ### Phase 1: Core Implementation (Completed)
 
@@ -238,11 +251,13 @@ The project implementation is divided into three phases:
 - **CI Job: Nightly Sanity Check** - Automated nightly verification
 - **Documentation & Environment Updates** - Update docs and environment templates
 
-### Phase 4: POC Demo Implementation (Planned)
+### Phase 4: Demo-Ready Implementation (Planned)
 
-21. **PR 21: BigQuery Integration** - Load data into BigQuery for analytics
-22. **PR 22: Looker Studio Connection** - Connect Looker Studio to BigQuery
-23. **PR 23: End-to-End Demo Script** - Create a script to run the full demo
+22. **PR 22: BigQuery Reporting View + Permissions** - Create a reporting view in BigQuery for client-facing metrics
+23. **PR 23: Looker Studio Template JSON** - Create a Looker Studio dashboard template for client demos
+24. **PR 24: Google Sheets Exporter** - Create a utility to export metrics to Google Sheets as an upsell option
+25. **PR 25: Demo Orchestrator v2** - Extend the end-to-end demo script to include all components
+26. **PR 26: Client Demo Docs & Slide Deck** - Create documentation and presentation materials for client demos
 
 Detailed implementation guides for Phase 1 PRs are available in the `docs/` directory:
 
@@ -253,7 +268,7 @@ Detailed implementation guides for Phase 1 PRs are available in the `docs/` dire
 - `docs/PR5_IMPLEMENTATION_GUIDE.md`
 - `docs/PR6_IMPLEMENTATION_GUIDE.md`
 
-Implementation details for Phase 2 can be found in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md), and details for Phase 3 can be found in [BQ_SANITY_PR_PLAN.md](docs/BQ_SANITY_PR_PLAN.md).
+Implementation details for Phase 2 can be found in [FIVETRAN_BIGQUERY_PR_PLAN.md](docs/FIVETRAN_BIGQUERY_PR_PLAN.md), details for Phase 3 can be found in [BQ_SANITY_PR_PLAN.md](docs/BQ_SANITY_PR_PLAN.md), and details for Phase 4 can be found in [DEMO_READY_PR_PLAN.md](docs/DEMO_READY_PR_PLAN.md).
 
 ---
 
