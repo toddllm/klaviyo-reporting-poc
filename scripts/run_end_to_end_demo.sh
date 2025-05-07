@@ -147,7 +147,8 @@ fi
 required_vars=("FIVETRAN_GROUP_ID" "FIVETRAN_CONNECTOR_ID" \
                "PG_HOST" "PG_PORT" "PG_DB" "PG_USER" "PG_PASSWORD" \
                "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_REGION" \
-               "S3_BUCKET" "S3_PREFIX" "SES_FROM_EMAIL")
+               "S3_BUCKET" "S3_PREFIX" "SES_FROM_EMAIL" \
+               "BQ_PROJECT" "BQ_DATASET")
 
 for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
@@ -254,6 +255,14 @@ if [ "$SKIP_BIGQUERY" = false ]; then
     if [ "$DRY_RUN" = true ]; then
         BQ_CMD="$BQ_CMD --dry-run"
         log "[DRY RUN] Would load to BigQuery: $BQ_CMD"
+        
+        # Get tables to check from environment or use default
+        SANITY_TABLES=${E2E_SANITY_TABLES:-"campaign,event,flow,list"}
+        
+        # Show what would be run in dry-run mode
+        SANITY_CMD="python $SCRIPT_DIR/bq_sanity_check.py --env $ROOT_DIR/.env --tables $SANITY_TABLES --dry-run"
+        log "[DRY RUN] Would run BigQuery sanity check: $SANITY_CMD"
+        log "[DRY RUN] Would check tables: $SANITY_TABLES"
     else
         log "Loading to BigQuery: $BQ_CMD"
         eval $BQ_CMD
@@ -264,6 +273,22 @@ if [ "$SKIP_BIGQUERY" = false ]; then
         fi
         
         log "BigQuery load completed successfully"
+        
+        # Run BigQuery sanity check after successful load
+        log "Running BigQuery sanity check"
+        # Get tables to check from environment or use default
+        SANITY_TABLES=${E2E_SANITY_TABLES:-"campaign,event,flow,list"}
+        
+        SANITY_CMD="python $SCRIPT_DIR/bq_sanity_check.py --env $ROOT_DIR/.env --tables $SANITY_TABLES"
+        log "Running BigQuery sanity check: $SANITY_CMD"
+        eval $SANITY_CMD
+        
+        if [ $? -ne 0 ]; then
+            log "Error: BigQuery sanity check failed. Some tables may be missing or empty."
+            exit 1
+        fi
+        
+        log "BigQuery sanity check completed successfully"
     fi
 else
     log "Skipping BigQuery load as requested"
@@ -322,6 +347,7 @@ log "  Date Range: $START_DATE to $END_DATE"
 log "  Report Type: $REPORT_TYPE"
 log "  Processed Data: $PROCESSED_CSV"
 log "  S3 URI: $S3_URI"
+log "  BigQuery Tables Checked: ${SANITY_TABLES:-"Not checked (dry run or skipped)"}"
 log "  Dashboard Link: $DASHBOARD_LINK"
 log "  Log File: $LOG_FILE"
 
