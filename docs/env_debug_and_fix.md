@@ -30,3 +30,4 @@ Metrics: ...
 
 ## Reference
 - This fix was documented after a failed end-to-end test run and verified by reviewing the current `.env` file.
+- For a comprehensive guide on environment setup, see [setup.md](setup.md).
