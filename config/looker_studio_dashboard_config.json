@@ -1,0 +1,136 @@
+{
+  "dataSourceId": "BigQuery",
+  "reportId": "klaviyo-campaign-dashboard",
+  "charts": [
+    {
+      "type": "SCORECARD",
+      "title": "Average Open Rate",
+      "metric": "AVG(open_rate)",
+      "position": {"x": 0, "y": 0, "width": 3, "height": 2}
+    },
+    {
+      "type": "SCORECARD",
+      "title": "Average Click Rate",
+      "metric": "AVG(click_rate)",
+      "position": {"x": 3, "y": 0, "width": 3, "height": 2}
+    },
+    {
+      "type": "SCORECARD",
+      "title": "Total Revenue",
+      "metric": "SUM(revenue)",
+      "position": {"x": 6, "y": 0, "width": 3, "height": 2}
+    },
+    {
+      "type": "TABLE",
+      "title": "Campaign Performance",
+      "dimensions": ["campaign_name", "send_time", "date"],
+      "metrics": ["open_rate", "click_rate", "conversion_rate", "revenue"],
+      "position": {"x": 0, "y": 2, "width": 12, "height": 6}
+    },
+    {
+      "type": "TIME_SERIES",
+      "title": "Open Rate Over Time",
+      "dimension": "date",
+      "metric": "open_rate",
+      "position": {"x": 0, "y": 8, "width": 6, "height": 4}
+    },
+    {
+      "type": "TIME_SERIES",
+      "title": "Click Rate Over Time",
+      "dimension": "date",
+      "metric": "click_rate",
+      "position": {"x": 6, "y": 8, "width": 6, "height": 4}
+    },
+    {
+      "type": "BAR",
+      "title": "Campaign Comparison",
+      "dimension": "campaign_name",
+      "metrics": ["open_rate", "click_rate", "conversion_rate"],
+      "position": {"x": 0, "y": 12, "width": 12, "height": 6}
+    }
+  ],
+  "controls": [
+    {
+      "type": "DATE_RANGE",
+      "title": "Date Range",
+      "dimension": "date",
+      "position": {"x": 0, "y": 18, "width": 6, "height": 2}
+    },
+    {
+      "type": "FILTER",
+      "title": "Campaign",
+      "dimension": "campaign_name",
+      "position": {"x": 6, "y": 18, "width": 6, "height": 2}
+    }
+  ],
+  "style": {
+    "theme": "PROFESSIONAL",
+    "colors": [
+      "#4285F4",
+      "#34A853",
+      "#FBBC05",
+      "#EA4335",
+      "#8AB4F8"
+    ],
+    "title": "Klaviyo Campaign Performance Dashboard",
+    "subtitle": "Real-time analytics for email marketing campaigns"
+  },
+  "parameters": {
+    "dateRangeStart": "30daysAgo",
+    "dateRangeEnd": "today"
+  },
+  "dataSchema": {
+    "fields": [
+      {
+        "name": "campaign_id",
+        "type": "STRING",
+        "description": "Unique identifier for the campaign"
+      },
+      {
+        "name": "campaign_name",
+        "type": "STRING",
+        "description": "Name of the campaign"
+      },
+      {
+        "name": "send_time",
+        "type": "TIMESTAMP",
+        "description": "Time when the campaign was sent"
+      },
+      {
+        "name": "open_rate",
+        "type": "FLOAT",
+        "description": "Percentage of recipients who opened the email"
+      },
+      {
+        "name": "click_rate",
+        "type": "FLOAT",
+        "description": "Percentage of recipients who clicked a link"
+      },
+      {
+        "name": "conversion_rate",
+        "type": "FLOAT",
+        "description": "Percentage of recipients who completed a conversion"
+      },
+      {
+        "name": "revenue",
+        "type": "FLOAT",
+        "description": "Total revenue attributed to the campaign"
+      },
+      {
+        "name": "unsubscribe_rate",
+        "type": "FLOAT",
+        "description": "Percentage of recipients who unsubscribed"
+      },
+      {
+        "name": "bounce_rate",
+        "type": "FLOAT",
+        "description": "Percentage of emails that bounced"
+      },
+      {
+        "name": "date",
+        "type": "DATE",
+        "description": "Date of the campaign metrics"
+      }
+    ]
+  }
+}

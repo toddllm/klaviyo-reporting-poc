@@ -194,7 +194,21 @@ python src/etl_runner.py --source fivetran --start 2024-05-01 --end 2024-05-07
 
 # Upload processed data to S3
 python src/etl_runner.py --source fivetran --start 2024-05-01 --end 2024-05-07 --upload-s3 s3://bucket/prefix/
+
+# Load data into BigQuery
+python src/bq_loader.py --file data/klaviyo_metrics_20250506_161741.csv --report-type campaign
 ```
+
+### Looker Studio Integration
+
+The Looker Studio integration provides interactive dashboards for visualizing Klaviyo campaign data. Key features include:
+
+- **Direct BigQuery Connection**: Connect Looker Studio directly to BigQuery for real-time data access
+- **Interactive Dashboards**: Create customizable dashboards with filters and controls
+- **Automated Refresh**: Schedule automatic data refreshes to keep dashboards up-to-date
+- **Shareable Reports**: Share reports with team members and clients
+
+To set up the Looker Studio integration, follow the step-by-step guide in [Looker Studio + BigQuery Setup](docs/looker_bigquery_setup.md).
 
 For detailed information on the Fivetran + BigQuery integration, see the [POC Overview](docs/POC_OVERVIEW.md) and the [Fivetran + BigQuery Integration PR Plan](docs/FIVETRAN_BIGQUERY_PR_PLAN.md).
 

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="400" fill="#f8f9fa" />
+  
+  <!-- BigQuery -->
+  <rect x="100" y="150" width="180" height="100" rx="10" ry="10" fill="#4285F4" />
+  <text x="190" y="205" font-family="Arial" font-size="20" text-anchor="middle" fill="white">BigQuery</text>
+  
+  <!-- Looker Studio -->
+  <rect x="520" y="150" width="180" height="100" rx="10" ry="10" fill="#34A853" />
+  <text x="610" y="205" font-family="Arial" font-size="20" text-anchor="middle" fill="white">Looker Studio</text>
+  
+  <!-- Connection Arrow -->
+  <line x1="280" y1="200" x2="520" y2="200" stroke="#5F6368" stroke-width="3" />
+  <polygon points="510,190 530,200 510,210" fill="#5F6368" />
+  
+  <!-- Data Flow Labels -->
+  <text x="400" y="180" font-family="Arial" font-size="14" text-anchor="middle" fill="#5F6368">Direct Connection</text>
+  <text x="400" y="230" font-family="Arial" font-size="14" text-anchor="middle" fill="#5F6368">SQL Queries</text>
+  
+  <!-- Dashboard Elements -->
+  <rect x="550" y="80" width="120" height="60" rx="5" ry="5" fill="#FBBC05" opacity="0.7" />
+  <text x="610" y="115" font-family="Arial" font-size="12" text-anchor="middle" fill="#202124">Campaign Metrics</text>
+  
+  <rect x="580" y="260" width="120" height="60" rx="5" ry="5" fill="#EA4335" opacity="0.7" />
+  <text x="640" y="295" font-family="Arial" font-size="12" text-anchor="middle" fill="#202124">Revenue Charts</text>
+  
+  <!-- Data Elements -->
+  <rect x="130" y="80" width="120" height="60" rx="5" ry="5" fill="#8AB4F8" opacity="0.7" />
+  <text x="190" y="115" font-family="Arial" font-size="12" text-anchor="middle" fill="#202124">Campaign Table</text>
+  
+  <rect x="160" y="260" width="120" height="60" rx="5" ry="5" fill="#8AB4F8" opacity="0.7" />
+  <text x="220" y="295" font-family="Arial" font-size="12" text-anchor="middle" fill="#202124">Events Table</text>
+  
+  <!-- Title -->
+  <text x="400" y="40" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#202124">Looker Studio + BigQuery Integration</text>
+  <text x="400" y="70" font-family="Arial" font-size="16" text-anchor="middle" fill="#5F6368">Interactive Dashboards for Klaviyo Campaign Data</text>
+</svg>
