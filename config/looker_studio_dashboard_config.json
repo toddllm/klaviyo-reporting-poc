@@ -1,136 +1,336 @@
 {
-  "dataSourceId": "BigQuery",
-  "reportId": "klaviyo-campaign-dashboard",
-  "charts": [
-    {
-      "type": "SCORECARD",
-      "title": "Average Open Rate",
-      "metric": "AVG(open_rate)",
-      "position": {"x": 0, "y": 0, "width": 3, "height": 2}
+  "version": "1.0",
+  "themeName": "MATERIAL",
+  "theme": {
+    "themeFillColor": {
+      "color": "#ffffff",
+      "themeRef": {
+        "index": 0
+      }
     },
-    {
-      "type": "SCORECARD",
-      "title": "Average Click Rate",
-      "metric": "AVG(click_rate)",
-      "position": {"x": 3, "y": 0, "width": 3, "height": 2}
+    "themeFontColor": {
+      "color": "#000000",
+      "themeRef": {
+        "index": 1
+      }
     },
-    {
-      "type": "SCORECARD",
-      "title": "Total Revenue",
-      "metric": "SUM(revenue)",
-      "position": {"x": 6, "y": 0, "width": 3, "height": 2}
+    "themeFontFamily": "Roboto",
+    "themeAccentFillColor": {
+      "color": "#4285f4",
+      "themeRef": {
+        "index": 2
+      }
     },
-    {
-      "type": "TABLE",
-      "title": "Campaign Performance",
-      "dimensions": ["campaign_name", "send_time", "date"],
-      "metrics": ["open_rate", "click_rate", "conversion_rate", "revenue"],
-      "position": {"x": 0, "y": 2, "width": 12, "height": 6}
+    "themeAccentFontColor": {
+      "color": "#ffffff",
+      "themeRef": {
+        "index": 3
+      }
     },
-    {
-      "type": "TIME_SERIES",
-      "title": "Open Rate Over Time",
-      "dimension": "date",
-      "metric": "open_rate",
-      "position": {"x": 0, "y": 8, "width": 6, "height": 4}
-    },
-    {
-      "type": "TIME_SERIES",
-      "title": "Click Rate Over Time",
-      "dimension": "date",
-      "metric": "click_rate",
-      "position": {"x": 6, "y": 8, "width": 6, "height": 4}
-    },
-    {
-      "type": "BAR",
-      "title": "Campaign Comparison",
-      "dimension": "campaign_name",
-      "metrics": ["open_rate", "click_rate", "conversion_rate"],
-      "position": {"x": 0, "y": 12, "width": 12, "height": 6}
-    }
-  ],
-  "controls": [
-    {
-      "type": "DATE_RANGE",
-      "title": "Date Range",
-      "dimension": "date",
-      "position": {"x": 0, "y": 18, "width": 6, "height": 2}
-    },
-    {
-      "type": "FILTER",
-      "title": "Campaign",
-      "dimension": "campaign_name",
-      "position": {"x": 6, "y": 18, "width": 6, "height": 2}
-    }
-  ],
-  "style": {
-    "theme": "PROFESSIONAL",
-    "colors": [
-      "#4285F4",
-      "#34A853",
-      "#FBBC05",
-      "#EA4335",
-      "#8AB4F8"
+    "themeAccentFontFamily": "Roboto",
+    "themeSeriesColor": [
+      {
+        "color": "#4285f4",
+        "seriesRef": {
+          "index": 0
+        },
+        "themeRef": {
+          "index": 4
+        }
+      },
+      {
+        "color": "#ea4335",
+        "seriesRef": {
+          "index": 1
+        },
+        "themeRef": {
+          "index": 5
+        }
+      },
+      {
+        "color": "#fbbc04",
+        "seriesRef": {
+          "index": 2
+        },
+        "themeRef": {
+          "index": 6
+        }
+      },
+      {
+        "color": "#34a853",
+        "seriesRef": {
+          "index": 3
+        },
+        "themeRef": {
+          "index": 7
+        }
+      },
+      {
+        "color": "#ff6d01",
+        "seriesRef": {
+          "index": 4
+        },
+        "themeRef": {
+          "index": 8
+        }
+      },
+      {
+        "color": "#46bdc6",
+        "seriesRef": {
+          "index": 5
+        },
+        "themeRef": {
+          "index": 9
+        }
+      }
     ],
-    "title": "Klaviyo Campaign Performance Dashboard",
-    "subtitle": "Real-time analytics for email marketing campaigns"
+    "themeIncreaseColor": {
+      "color": "#34a853",
+      "themeRef": {
+        "index": 10
+      }
+    },
+    "themeDecreaseColor": {
+      "color": "#ea4335",
+      "themeRef": {
+        "index": 11
+      }
+    },
+    "themeGridColor": {
+      "color": "#e0e0e0",
+      "themeRef": {
+        "index": 12
+      }
+    }
   },
-  "parameters": {
-    "dateRangeStart": "30daysAgo",
-    "dateRangeEnd": "today"
-  },
-  "dataSchema": {
-    "fields": [
+  "reportName": "Klaviyo Email Marketing Performance",
+  "reportDescription": "Email campaign performance metrics from Klaviyo",
+  "dataSourceRef": {
+    "sources": [
       {
-        "name": "campaign_id",
-        "type": "STRING",
-        "description": "Unique identifier for the campaign"
-      },
-      {
-        "name": "campaign_name",
-        "type": "STRING",
-        "description": "Name of the campaign"
-      },
-      {
-        "name": "send_time",
-        "type": "TIMESTAMP",
-        "description": "Time when the campaign was sent"
-      },
-      {
-        "name": "open_rate",
-        "type": "FLOAT",
-        "description": "Percentage of recipients who opened the email"
-      },
-      {
-        "name": "click_rate",
-        "type": "FLOAT",
-        "description": "Percentage of recipients who clicked a link"
-      },
-      {
-        "name": "conversion_rate",
-        "type": "FLOAT",
-        "description": "Percentage of recipients who completed a conversion"
-      },
-      {
-        "name": "revenue",
-        "type": "FLOAT",
-        "description": "Total revenue attributed to the campaign"
-      },
-      {
-        "name": "unsubscribe_rate",
-        "type": "FLOAT",
-        "description": "Percentage of recipients who unsubscribed"
-      },
-      {
-        "name": "bounce_rate",
-        "type": "FLOAT",
-        "description": "Percentage of emails that bounced"
-      },
-      {
-        "name": "date",
-        "type": "DATE",
-        "description": "Date of the campaign metrics"
+        "dataSourceId": "BQ_SOURCE_ID",
+        "projectId": "${BQ_PROJECT}",
+        "tableId": "v_email_metrics",
+        "datasetId": "${BQ_DATASET}"
       }
     ]
-  }
+  },
+  "components": [
+    {
+      "id": "header-1",
+      "type": "HEADER",
+      "properties": {
+        "title": "Klaviyo Email Marketing Performance",
+        "subtitle": "Last 30 Days",
+        "logoUrl": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 1
+      }
+    },
+    {
+      "id": "filter-date-range",
+      "type": "FILTER",
+      "properties": {
+        "filterName": "Date Range",
+        "filterType": "DATE_RANGE",
+        "dateRangeType": "LAST_30_DAYS",
+        "defaultValues": [
+          "last-30-days"
+        ]
+      },
+      "position": {
+        "x": 0,
+        "y": 1,
+        "width": 12,
+        "height": 1
+      }
+    },
+    {
+      "id": "scorecard-revenue",
+      "type": "SCORECARD",
+      "properties": {
+        "metric": "revenue",
+        "metricCalculation": "SUM",
+        "comparison": {
+          "compareToType": "PREVIOUS_PERIOD",
+          "showDifference": true,
+          "showPercentage": true
+        },
+        "title": "Total Revenue (Last 7 Days)",
+        "dataFilters": [
+          {
+            "filterType": "DATE_RANGE",
+            "dateRangeType": "LAST_7_DAYS"
+          }
+        ],
+        "currencyFormatting": true
+      },
+      "position": {
+        "x": 0,
+        "y": 2,
+        "width": 4,
+        "height": 2
+      }
+    },
+    {
+      "id": "scorecard-open-rate",
+      "type": "SCORECARD",
+      "properties": {
+        "metric": "unique_opens",
+        "metricCalculation": "SUM(unique_opens) / SUM(sends) * 100",
+        "comparison": {
+          "compareToType": "PREVIOUS_PERIOD",
+          "showDifference": true,
+          "showPercentage": true
+        },
+        "title": "Average Open Rate",
+        "formatType": "PERCENT"
+      },
+      "position": {
+        "x": 4,
+        "y": 2,
+        "width": 4,
+        "height": 2
+      }
+    },
+    {
+      "id": "scorecard-click-rate",
+      "type": "SCORECARD",
+      "properties": {
+        "metric": "unique_clicks",
+        "metricCalculation": "SUM(unique_clicks) / SUM(sends) * 100",
+        "comparison": {
+          "compareToType": "PREVIOUS_PERIOD",
+          "showDifference": true,
+          "showPercentage": true
+        },
+        "title": "Average Click Rate",
+        "formatType": "PERCENT"
+      },
+      "position": {
+        "x": 8,
+        "y": 2,
+        "width": 4,
+        "height": 2
+      }
+    },
+    {
+      "id": "chart-open-rate-trend",
+      "type": "CHART",
+      "properties": {
+        "chartType": "LINE",
+        "dimensions": [
+          "send_date"
+        ],
+        "metrics": [
+          {
+            "name": "open_rate",
+            "calculation": "SUM(unique_opens) / SUM(sends) * 100"
+          }
+        ],
+        "title": "Open Rate Trend (Last 30 Days)",
+        "yAxisFormatType": "PERCENT"
+      },
+      "position": {
+        "x": 0,
+        "y": 4,
+        "width": 12,
+        "height": 4
+      }
+    },
+    {
+      "id": "chart-campaign-ctr",
+      "type": "CHART",
+      "properties": {
+        "chartType": "BAR",
+        "dimensions": [
+          "subject"
+        ],
+        "metrics": [
+          {
+            "name": "click_rate",
+            "calculation": "SUM(unique_clicks) / SUM(sends) * 100"
+          }
+        ],
+        "title": "Click-Through Rate by Campaign (Last 5 Campaigns)",
+        "yAxisFormatType": "PERCENT",
+        "sortByMetric": true,
+        "sortOrder": "DESCENDING",
+        "maxResults": 5
+      },
+      "position": {
+        "x": 0,
+        "y": 8,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": "chart-revenue-by-campaign",
+      "type": "CHART",
+      "properties": {
+        "chartType": "BAR",
+        "dimensions": [
+          "subject"
+        ],
+        "metrics": [
+          "revenue"
+        ],
+        "title": "Revenue by Campaign (Last 5 Campaigns)",
+        "yAxisFormatType": "CURRENCY",
+        "sortByMetric": true,
+        "sortOrder": "DESCENDING",
+        "maxResults": 5
+      },
+      "position": {
+        "x": 6,
+        "y": 8,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": "table-campaign-metrics",
+      "type": "TABLE",
+      "properties": {
+        "dimensions": [
+          "send_date",
+          "subject",
+          "campaign_id"
+        ],
+        "metrics": [
+          "sends",
+          "unique_opens",
+          {
+            "name": "open_rate",
+            "calculation": "unique_opens / sends * 100",
+            "formatType": "PERCENT"
+          },
+          "unique_clicks",
+          {
+            "name": "click_rate",
+            "calculation": "unique_clicks / sends * 100",
+            "formatType": "PERCENT"
+          },
+          {
+            "name": "revenue",
+            "formatType": "CURRENCY"
+          }
+        ],
+        "title": "Campaign Performance Details",
+        "sortByMetric": "send_date",
+        "sortOrder": "DESCENDING"
+      },
+      "position": {
+        "x": 0,
+        "y": 12,
+        "width": 12,
+        "height": 6
+      }
+    }
+  ]
 }
