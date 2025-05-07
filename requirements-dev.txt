@@ -2,3 +2,8 @@ pytest>=7.4.0
 moto>=4.2.0
 pytest-mock>=3.12.0
 pytest-subprocess>=1.5.0
+rich
+selenium
+webdriver-manager
+ukkonen
+pillow
