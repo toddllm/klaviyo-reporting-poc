@@ -136,7 +136,9 @@ fi
 # Load environment variables
 if [ -f "$ROOT_DIR/.env" ]; then
     log "Loading environment variables from .env file"
+    set -a
     source "$ROOT_DIR/.env"
+    set +a
 else
     log "Warning: .env file not found. Make sure all required environment variables are set."
 fi

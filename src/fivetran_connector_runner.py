@@ -44,7 +44,7 @@ def run_connector(group_id: str, connector_id: str, timeout: int = 3600,
         for connector in connectors:
             if connector['id'] == connector_id:
                 connector_found = True
-                logger.info(f"Found connector: {connector['name']} (ID: {connector_id})")
+                logger.info(f"Found connector {connector_id} in group {group_id}")
                 break
         
         if not connector_found:
