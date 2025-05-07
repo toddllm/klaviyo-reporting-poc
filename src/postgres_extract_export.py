@@ -55,6 +55,24 @@ def build_query(table: str, start_date: Optional[str] = None, end_date: Optional
     return f"SELECT * FROM {table} {where_clause} {order_clause} {limit_clause};"
 
 
+def build_last_n_days_query(table: str, days: int = 30, date_column: str = DEFAULT_DATE_COLUMN, 
+                          limit: Optional[int] = None) -> str:
+    """Build a SQL query to fetch data from the last N days."""
+    where_clause = f"WHERE {date_column} >= CURRENT_DATE - INTERVAL '{days} days'"
+    limit_clause = f"LIMIT {limit}" if limit else ""
+    order_clause = f"ORDER BY {date_column} ASC"
+    
+    return f"SELECT * FROM {table} {where_clause} {order_clause} {limit_clause};"
+
+
+def fetch_last_n_days(conn, table: str, days: int = 30, date_column: str = DEFAULT_DATE_COLUMN, 
+                    limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    """Fetch data from the last N days as a fallback when date filters return no results."""
+    query = build_last_n_days_query(table, days, date_column, limit)
+    logger.info(f"Fetching data from last {days} days with query: {query}")
+    return execute_query(conn, query)
+
+
 def execute_query(conn, query: str) -> List[Dict[str, Any]]:
     """Execute a SQL query and return results as a list of dictionaries."""
     try:
@@ -116,7 +134,8 @@ def fetch_to_dataframe(table: str = DEFAULT_TABLE,
                      end_date: Optional[str] = None,
                      date_column: str = DEFAULT_DATE_COLUMN,
                      limit: Optional[int] = None,
-                     dry_run: bool = False) -> List[Dict[str, Any]]:
+                     dry_run: bool = False,
+                     fallback_days: int = 30) -> List[Dict[str, Any]]:
     """Fetch data from Postgres and return as a list of dictionaries.
     
     This function can be imported and called directly from other modules.
@@ -128,6 +147,7 @@ def fetch_to_dataframe(table: str = DEFAULT_TABLE,
         date_column: Column name to use for date filtering
         limit: Maximum number of rows to return
         dry_run: If True, print query but don't execute it
+        fallback_days: Number of days to use for fallback query if no results
         
     Returns:
         List of dictionaries representing the query results
@@ -143,6 +163,15 @@ def fetch_to_dataframe(table: str = DEFAULT_TABLE,
         # Connect to the database and execute the query
         with get_connection() as conn:
             results = execute_query(conn, query)
+            
+            # If no results, try fallback to last N days
+            if not results:
+                logger.warning(f"⚠️  Extract returned 0 rows – falling back to last {fallback_days} days")
+                results = fetch_last_n_days(conn, table, fallback_days, date_column, limit)
+                if results:
+                    logger.info(f"Fallback query returned {len(results)} rows")
+                else:
+                    logger.warning(f"Fallback query also returned 0 rows")
         
         logger.info(f"Fetched {len(results)} rows from {table}")
         return results
@@ -157,7 +186,8 @@ def fetch_and_export_to_csv(table: str = DEFAULT_TABLE,
                          end_date: Optional[str] = None,
                          date_column: str = DEFAULT_DATE_COLUMN,
                          output_file: Optional[str] = None,
-                         dry_run: bool = False) -> str:
+                         dry_run: bool = False,
+                         fallback_days: int = 30) -> str:
     """Fetch data from Postgres and export to CSV.
     
     This function can be imported and called directly from other modules.
@@ -169,16 +199,17 @@ def fetch_and_export_to_csv(table: str = DEFAULT_TABLE,
         date_column: Column name to use for date filtering
         output_file: Path to output file. If None, a default path is generated
         dry_run: If True, don't actually write to file
+        fallback_days: Number of days to use for fallback query if no results
         
     Returns:
         Path to the output CSV file
     """
-    # Fetch data
-    results = fetch_to_dataframe(table, start_date, end_date, date_column, dry_run=dry_run)
+    # Fetch data with fallback for empty results
+    results = fetch_to_dataframe(table, start_date, end_date, date_column, dry_run=dry_run, fallback_days=fallback_days)
     
     if not results and not dry_run:
-        logger.warning("Query returned no results")
-        raise ValueError("Query returned no results")
+        logger.warning("Both primary and fallback queries returned no results")
+        raise ValueError("Both primary and fallback queries returned no results")
     
     # Generate output filename if not provided
     if not output_file:
@@ -208,6 +239,8 @@ def main(argv=None):
     parser.add_argument("--output", help="Output file path")
     parser.add_argument("--dry-run", action="store_true", help="Print sample rows without writing to file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
+    parser.add_argument("--fallback-days", type=int, default=30, 
+                        help="Number of days to use for fallback query if no results (default: 30)")
     
     args = parser.parse_args(argv)
     
@@ -216,19 +249,20 @@ def main(argv=None):
     logging.basicConfig(level=log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     
     try:
-        # Fetch data
+        # Fetch data with fallback for empty results
         results = fetch_to_dataframe(
             args.table, 
             args.start, 
             args.end, 
             args.date_column, 
             args.limit if args.dry_run else None,
-            args.dry_run
+            args.dry_run,
+            args.fallback_days
         )
         
         if not results:
-            logger.warning("Query returned no results")
-            print("Query returned no results")
+            logger.warning("Both primary and fallback queries returned no results")
+            print("Both primary and fallback queries returned no results")
             return 1
         
         # In dry-run mode, print sample rows and exit
