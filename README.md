@@ -4,7 +4,13 @@ This repository contains tools for generating realistic mock data in Klaviyo to 
 
 ## Workflow
 
+### Original Workflow
+
 ![Klaviyo Reporting Workflow](docs/img/flow.svg)
+
+### Fivetran + BigQuery Workflow
+
+*A new diagram illustrating the Fivetran → Postgres → Mapper → CSV → S3 → BigQuery → Looker Studio workflow will be added in PR 20.*
 
 ## Features
 
@@ -14,14 +20,23 @@ This repository contains tools for generating realistic mock data in Klaviyo to 
 - **Flow Events Simulation**: Creates a mock welcome flow with message interactions
 - **Purchase Behavior Simulation**: Generates realistic purchase events with product data
 - **Automated Reporting**: Extracts campaign metrics from Klaviyo API and prepares them for Looker Studio
+- **Fivetran Integration**: Syncs Klaviyo data to Postgres database (in development)
+- **BigQuery Warehouse**: Stores processed data for analytics and reporting (in development)
+- **S3 Archiving**: Archives processed data to S3 for long-term storage (in development)
+- **Email Notifications**: Sends email notifications via AWS SES (in development)
 
 ## Requirements
 
 - Python 3.6+
 - Python version managed with `pyenv` (see `.python-version`; Python 3.10.6)
-- Required packages: `requests`, `faker`, `python-dotenv` (see requirements.txt)
+- Required packages: `requests`, `faker`, `python-dotenv`, `boto3`, `psycopg2-binary`, `responses` (see requirements.txt)
 - Klaviyo API key (stored in private-api-key.txt or as environment variable)
 - Looker Studio account (for visualization)
+- For Fivetran + BigQuery integration:
+  - Fivetran account with Klaviyo connector
+  - Postgres database (Fivetran destination)
+  - AWS account with S3 and SES access
+  - BigQuery account (for data warehousing)
 
 ## API Version
 
@@ -40,17 +55,43 @@ pip install -r requirements.txt
 Copy `.env.example` to `.env` and update with your values:
 
 ```bash
+# Klaviyo API Configuration
 KLAVIYO_API_KEY=pk_xxx
 AUDIENCE_ID=YdSN6t
 CAMPAIGN_ID=AbCdEf
 TEMPLATE_ID=WJ3kbV
 NUM_TEST_PROFILES=5
 MODE=mock  # Use 'real' for actual API calls
+
+# Integration Configuration
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR_WEBHOOK
 LOOKER_REPORT_URL=https://datastudio.google.com/reporting/YOUR_REPORT_ID
+
+# Fivetran Configuration
+FIVETRAN_API_KEY=your_fivetran_api_key
+FIVETRAN_API_SECRET=your_fivetran_api_secret
+FIVETRAN_GROUP_ID=your_fivetran_group_id
+FIVETRAN_CONNECTOR_ID=your_fivetran_connector_id
+
+# Postgres Configuration
+PG_HOST=your_postgres_host
+PG_PORT=5432
+PG_DB=your_postgres_db
+PG_USER=your_postgres_user
+PG_PASSWORD=your_postgres_password
+
+# AWS Configuration
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_REGION=us-east-1
+S3_BUCKET=your_s3_bucket
+S3_PREFIX=klaviyo-poc/
+SES_FROM_EMAIL=your_verified_email@example.com
 ```
 
 Alternatively, you can set these as environment variables in your system.
+
+Note: For the Fivetran + BigQuery integration, additional environment variables are required. See the [Fivetran + BigQuery Integration PR Plan](docs/FIVETRAN_BIGQUERY_PR_PLAN.md) for details.
 
 ## Mock Data Generation
 
@@ -118,6 +159,35 @@ python src/lookml_field_mapper.py
 
 See the [Narrow Scope POC Documentation](README-NARROW-SCOPE-POC.md) for more details.
 
+## Fivetran + BigQuery Integration
+
+The project is being enhanced with a Fivetran + BigQuery integration to provide a more scalable and robust data pipeline. This implementation includes:
+
+- **Fivetran Integration**: Reliable data integration from Klaviyo to a Postgres database
+- **BigQuery Warehouse**: Scalable data warehouse for analytics and reporting
+- **Looker Studio Connection**: Direct connection to BigQuery for visualization
+- **S3 Archiving**: Long-term storage of processed data for audit and recovery
+
+The new data flow is:
+
+1. Klaviyo data is synced to Postgres via Fivetran
+2. Data is extracted from Postgres to CSV
+3. CSV data is processed through the field mapper
+4. Processed data is loaded to BigQuery and archived to S3
+5. Looker Studio connects directly to BigQuery for visualization
+
+### Running the Fivetran + BigQuery Integration
+
+```bash
+# Run the full ETL pipeline with Fivetran source
+python src/etl_runner.py --source fivetran --start 2024-05-01 --end 2024-05-07
+
+# Upload processed data to S3
+python src/etl_runner.py --source fivetran --start 2024-05-01 --end 2024-05-07 --upload-s3 s3://bucket/prefix/
+```
+
+For detailed information on the Fivetran + BigQuery integration, see the [Fivetran + BigQuery Integration PR Plan](docs/FIVETRAN_BIGQUERY_PR_PLAN.md).
+
 ## Notes
 
 - All mock data is clearly marked with `Mock_` prefixes
@@ -137,9 +207,9 @@ If you encounter API errors:
 ## Known Limitations
 
 - The current implementation only supports basic campaign metrics (open rate, click rate)
-- No authentication for Looker Studio integration (manual upload required)
 - Limited error handling for API rate limits
-- No automated scheduling of data refresh
+- The Fivetran + BigQuery integration is still in development
+- Requires Fivetran, Postgres, BigQuery, and AWS S3 accounts for full functionality
 
 ## Security
 
@@ -149,10 +219,10 @@ If you encounter API errors:
 
 ## Development
 
-⚠️ **IMPORTANT: All developers must follow the Narrow Scope POC PR Plan** ⚠️
+⚠️ **IMPORTANT: All developers must follow the Fivetran + BigQuery Integration PR Plan** ⚠️
 
 This project follows a structured development process outlined in the
-[Narrow Scope POC PR Plan](docs/NARROW_SCOPE_POC_PR_PLAN.md). Before creating any PRs or making changes,
+[Fivetran + BigQuery Integration PR Plan](docs/FIVETRAN_BIGQUERY_PR_PLAN.md). Before creating any PRs or making changes,
 please review this document.
 
 All PRs must:
