@@ -101,6 +101,8 @@ SES_FROM_EMAIL=your_verified_email@example.com
 
 Alternatively, you can set these as environment variables in your system.
 
+For a comprehensive guide on environment setup, including a checklist of required variables and setup instructions, see the [Environment Setup Guide](docs/setup.md).
+
 Note: For the Fivetran + BigQuery integration, additional environment variables are required. See the [Fivetran + BigQuery Integration PR Plan](docs/FIVETRAN_BIGQUERY_PR_PLAN.md) for details.
 
 ## Mock Data Generation

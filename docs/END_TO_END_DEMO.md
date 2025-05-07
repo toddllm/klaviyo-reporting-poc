@@ -22,6 +22,8 @@ Before running the end-to-end demo, ensure you have:
    - AWS credentials and configuration
    - BigQuery project and dataset information
    - SES email configuration
+   
+   For a comprehensive guide on environment setup, see [Environment Setup Guide](setup.md).
 
 3. Installed all required Python packages:
    ```bash
