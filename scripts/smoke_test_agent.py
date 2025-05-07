@@ -18,6 +18,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 console = Console()
 
@@ -48,6 +52,7 @@ def check_pre_flight(dry_run):
         "BQ_PROJECT","BQ_DATASET",
         "GOOGLE_SHEET_ID","GOOGLE_SHEET_NAME","GOOGLE_SHEET_RANGE_NAME",
         "LOOKER_SA_EMAIL",
+        "LOOKER_DASHBOARD_URL","GOOGLE_SHEET_URL",
     ]
     if not Path('.env').exists():
         return False, ".env file not found"
