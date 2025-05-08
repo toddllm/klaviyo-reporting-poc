@@ -52,3 +52,19 @@ templates/
 # Credentials and logs
 fivetran_bq_key.json
 logs/
+
+# Data exports & mocks
+data/**/*.csv
+data/**/*.json
+data/klaviyo_metrics_*.csv
+data/supermetrics_raw_*.json
+
+# Logs & temp
+logs/**/*.log
+logs/end_to_end_demo_*.log
+logs/screens/
+
+# Backup & misc
+*.bak
+*.tmp
+.env.bak
