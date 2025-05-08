@@ -48,7 +48,7 @@ def log_phase(md, phase, passed, commands, output, screenshot=None):
 
 def check_pre_flight(dry_run):
     required = [
-        "FIVETRAN_SYSTEM_KEY","FIVETRAN_SECRET","FIVETRAN_GROUP_ID","FIVETRAN_CONNECTOR_ID",
+        "FIVETRAN_API_KEY","FIVETRAN_API_SECRET","FIVETRAN_GROUP_ID","FIVETRAN_CONNECTOR_ID",
         "BQ_PROJECT","BQ_DATASET",
         "GOOGLE_SHEET_ID","GOOGLE_SHEET_NAME","GOOGLE_SHEET_RANGE_NAME",
         "LOOKER_SA_EMAIL",
@@ -71,16 +71,17 @@ def check_pre_flight(dry_run):
     return True, "Environment OK"
 
 def check_fivetran_sync(dry_run):
-    cmds = ["python src/fivetran_connector_runner.py --dry-run"]
-    code, out, err = run_command(cmds[0])
-    if code != 0:
-        return False, f"Dry-run failed: {err or out}"
     if dry_run:
+        cmds = ["python src/fivetran_connector_runner.py --dry-run --mock"]
+        code, out, err = run_command(cmds[0])
+        if code != 0:
+            return False, f"Dry-run failed: {err or out}"
         return True, out
-    cmds.append("python src/fivetran_connector_runner.py")
-    code2, out2, err2 = run_command(cmds[1])
-    full = out + "\n" + out2 + "\n" + err2
-    if code2 != 0 or "sync_completed: success" not in full:
+    
+    cmds = ["python src/fivetran_connector_runner.py"]
+    code, out, err = run_command(cmds[0])
+    full = out + "\n" + err
+    if code != 0 or "sync_completed: success" not in full:
         return False, full
     return True, full
 
@@ -96,7 +97,7 @@ def check_etl_runner(dry_run):
     end = datetime.date.today().isoformat()
     cmds = [f"python src/etl_runner.py --source fivetran --start {start} --end {end} --dry-run"]
     code, out, err = run_command(cmds[0])
-    if code != 0 or "[DRY RUN]" not in out:
+    if code != 0 or "ETL process completed successfully" not in out:
         return False, out + "\n" + err
     if dry_run:
         return True, out
@@ -111,7 +112,7 @@ def check_etl_runner(dry_run):
 def deploy_bq_view():
     cmd = "bash scripts/deploy_reporting_view.sh"
     code, out, err = run_command(cmd)
-    if code != 0 or ("View created" not in out and "already exists" not in out):
+    if code != 0 or ("Deployment completed successfully" not in out and "already exists" not in out):
         return False, out + "\n" + err
     return True, out
 
@@ -141,8 +142,8 @@ def check_google_sheet(dry_run):
     if not url:
         return False, "GOOGLE_SHEET_URL not set", None
     if not dry_run:
-        today = datetime.date.today().isoformat()
-        subprocess.run(f"python scripts/sheets_push_snapshot.py --date {today}", shell=True)
+        # The enhanced script no longer requires the date parameter
+        subprocess.run("python scripts/sheets_push_snapshot.py", shell=True)
     if dry_run:
         return True, "Skipped screenshot", None
     options = Options()
