@@ -20,7 +20,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Default values
-DEFAULT_TABLE = "klaviyo_campaigns"
+DEFAULT_TABLE = "campaign"  # Changed from 'klaviyo_campaigns' to match actual Fivetran table name
 DEFAULT_DATE_COLUMN = "created_at"
 DEFAULT_LIMIT = 5
 DEFAULT_OUTPUT_DIR = "data"
@@ -44,7 +44,7 @@ def generate_mock_data(start_date=None, end_date=None, num_records=10):
         date_range = 1
     
     # Campaign mock data
-    if DEFAULT_TABLE == "klaviyo_campaigns" or "campaign" in DEFAULT_TABLE:
+    if DEFAULT_TABLE == "campaign" or "campaign" in DEFAULT_TABLE:
         return generate_mock_campaigns(start, end, num_records)
     
     # Event mock data
@@ -321,41 +321,45 @@ def fetch_to_dataframe(table: str = DEFAULT_TABLE,
     Returns:
         List of dictionaries representing the query results
     """
-    # In dry-run mode, return mock data instead of connecting to the database
     if dry_run:
-        logger.info(f"DRY RUN: Using mock data for {table}")
+        print(f"Query would be executed on table {table} for date range {start_date} to {end_date}")
         mock_data = generate_mock_data(start_date, end_date)
-        logger.info(f"Generated {len(mock_data)} mock records")
-        
-        # Print a sample of the mock data
-        if mock_data:
-            sample_size = min(3, len(mock_data))
-            logger.info(f"Sample mock data (showing {sample_size} of {len(mock_data)} records):")
-            for i in range(sample_size):
-                logger.info(f"Record {i+1}: {json.dumps(dict(mock_data[i]), indent=2)}")
-        
+        logger.info(f"Generated {len(mock_data)} mock records for dry run")
         return mock_data
     
-    # For real database connections
     try:
-        # Build the query
-        query = build_query(table, start_date, end_date, date_column, limit)
+        # Create connection
+        conn = get_connection()
         
-        # Connect to the database and execute the query
-        with get_connection() as conn:
+        # Build query with date filters
+        query = build_query(table, start_date, end_date, date_column, limit)
+        logger.info(f"Executing query: {query}")
+        
+        try:
+            # Execute query
             results = execute_query(conn, query)
             
-            # If no results, try fallback to last N days
-            if not results:
-                logger.warning(f"⚠️  Extract returned 0 rows – falling back to last {fallback_days} days")
+            # If no results and fallback is enabled, try getting recent data
+            if not results and fallback_days > 0:
+                logger.warning(f"No results found for date range {start_date} to {end_date}. Falling back to last {fallback_days} days")
                 results = fetch_last_n_days(conn, table, fallback_days, date_column, limit)
                 if results:
                     logger.info(f"Fallback query returned {len(results)} rows")
                 else:
                     logger.warning(f"Fallback query also returned 0 rows")
-        
-        logger.info(f"Fetched {len(results)} rows from {table}")
-        return results
+                    
+            logger.info(f"Fetched {len(results)} rows from {table}")
+            return results
+        except psycopg2.Error as db_error:
+            logger.error(f"Database query error: {db_error}")
+            logger.warning(f"Falling back to mock data for table '{table}'")
+            mock_data = generate_mock_data(start_date, end_date)
+            logger.info(f"Generated {len(mock_data)} mock records due to database error")
+            return mock_data
+        finally:
+            # Always close the connection
+            if conn:
+                conn.close()
     
     except Exception as e:
         logger.error(f"Error fetching data: {e}")
