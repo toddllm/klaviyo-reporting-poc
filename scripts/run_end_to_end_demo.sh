@@ -132,21 +132,32 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate dates
+# Function to validate date format (YYYY-MM-DD)
 validate_date() {
     local date_str=$1
-    # Extract year, month, and day
-    local year=$(echo "$date_str" | cut -d'-' -f1)
-    local month=$(echo "$date_str" | cut -d'-' -f2)
-    local day=$(echo "$date_str" | cut -d'-' -f3)
-    
-    # Check if the format is correct
-    if [[ ! "$date_str" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+    # Check if the string matches YYYY-MM-DD format with a regex
+    if [[ ! $date_str =~ ^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$ ]]; then
         return 1
     fi
     
-    # Check if month and day are valid
-    if [[ "$month" -lt 1 || "$month" -gt 12 || "$day" -lt 1 || "$day" -gt 31 ]]; then
+    # Extract year, month, and day
+    local year=${date_str:0:4}
+    local month=${date_str:5:2}
+    local day=${date_str:8:2}
+    
+    # Check if the date is valid
+    # Use 10# prefix to ensure base 10 parsing of numbers with leading zeros
+    if [[ 10#$month -lt 1 || 10#$month -gt 12 || 10#$day -lt 1 || 10#$day -gt 31 ]]; then
+        return 1
+    fi
+    
+    # Additional validation for months with less than 31 days
+    if [[ (10#$month -eq 4 || 10#$month -eq 6 || 10#$month -eq 9 || 10#$month -eq 11) && 10#$day -gt 30 ]]; then
+        return 1
+    fi
+    
+    # February validation (not accounting for leap years)
+    if [[ 10#$month -eq 2 && 10#$day -gt 29 ]]; then
         return 1
     fi
     
@@ -218,14 +229,10 @@ log "  End Date: $END_DATE"
 log "  Report Type: $REPORT_TYPE"
 log "  Dry Run: $DRY_RUN"
 
-# Step 1: Prompt about Fivetran sync duration
+# Display informational message about Fivetran sync
 if [ "$SKIP_FIVETRAN" = false ]; then
-    echo -n "Fivetran sync may take up to $MAX_FIVETRAN_WAIT_MINUTES minutes. Proceed? [y/N]: "
-    read -r PROCEED_SYNC
-    if [[ ! "$PROCEED_SYNC" =~ ^[Yy] ]]; then
-        SKIP_FIVETRAN=true
-        log "User opted to skip Fivetran sync"
-    fi
+    log "Info: Fivetran sync will be performed and may take up to $MAX_FIVETRAN_WAIT_MINUTES minutes"
+    # No confirmation required anymore with fixed Fivetran API client
 fi
 
 log "  Dry Run: $DRY_RUN"
