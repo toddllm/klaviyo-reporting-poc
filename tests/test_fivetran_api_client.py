@@ -157,6 +157,35 @@ def test_get_sync_status(fivetran_client):
     # Verify the response
     assert status == "SYNCING"
     assert error is None
+    
+@responses.activate
+def test_get_sync_status_lowercase(fivetran_client):
+    connector_id = "test_connector"
+    
+    # Mock the API response with lowercase state as returned by the real API
+    responses.add(
+        responses.GET,
+        f"https://api.fivetran.com/v1/connectors/{connector_id}",
+        json={
+            "code": "Success",
+            "data": {
+                "id": connector_id,
+                "name": "Test Connector",
+                "status": {
+                    "sync_state": "syncing",  # Lowercase state
+                    "sync_error": None
+                }
+            }
+        },
+        status=200
+    )
+    
+    # Call the method
+    status, error = fivetran_client.get_sync_status(connector_id)
+    
+    # Verify the response - should be normalized to uppercase
+    assert status == "SYNCING"
+    assert error is None
 
 @responses.activate
 def test_get_sync_status_with_error(fivetran_client):
@@ -232,6 +261,54 @@ def test_wait_for_sync_completion_success(fivetran_client):
         result = fivetran_client.wait_for_sync_completion(connector_id, poll_interval=1)
     
     # Verify the result
+    assert result is True
+    assert mock_sleep.call_count == 1  # Should sleep once between the two API calls
+
+@responses.activate
+def test_wait_for_sync_completion_scheduled_state(fivetran_client):
+    connector_id = "test_connector"
+    
+    # Mock the API response for the first call (syncing - lowercase as in real API)
+    responses.add(
+        responses.GET,
+        f"https://api.fivetran.com/v1/connectors/{connector_id}",
+        json={
+            "code": "Success",
+            "data": {
+                "id": connector_id,
+                "name": "Test Connector",
+                "status": {
+                    "sync_state": "syncing",  # Lowercase as returned by real API
+                    "sync_error": None
+                }
+            }
+        },
+        status=200
+    )
+    
+    # Mock the API response for the second call (scheduled - what real API returns post-sync)
+    responses.add(
+        responses.GET,
+        f"https://api.fivetran.com/v1/connectors/{connector_id}",
+        json={
+            "code": "Success",
+            "data": {
+                "id": connector_id,
+                "name": "Test Connector",
+                "status": {
+                    "sync_state": "scheduled",  # What real API returns when sync is done
+                    "sync_error": None
+                }
+            }
+        },
+        status=200
+    )
+    
+    # Call the method with a short poll interval
+    with patch('time.sleep') as mock_sleep:  # Mock sleep to speed up the test
+        result = fivetran_client.wait_for_sync_completion(connector_id, poll_interval=1)
+    
+    # Verify the result - should succeed since 'scheduled' is now treated as successful
     assert result is True
     assert mock_sleep.call_count == 1  # Should sleep once between the two API calls
 

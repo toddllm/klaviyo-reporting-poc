@@ -101,6 +101,11 @@ class FivetranAPIClient:
         connector_data = self.get_connector(connector_id)
         status = connector_data.get("status", {}).get("sync_state", "UNKNOWN")
         error = connector_data.get("status", {}).get("sync_error", None)
+        
+        # Normalize status to uppercase for consistent handling
+        if status:
+            status = status.upper()
+        
         return status, error
     
     def wait_for_sync_completion(self, connector_id: str, timeout: int = 3600, poll_interval: int = 30) -> bool:
@@ -118,12 +123,17 @@ class FivetranAPIClient:
         while time.time() - start_time < timeout:
             status, error = self.get_sync_status(connector_id)
             
+            # Map API states to our expected states
+            # The API returns lowercase states like 'syncing' and 'scheduled',
+            # but our code expects uppercase states like 'SYNCING' and 'SYNC_SUCCEEDED'
             if status == "SYNCING":
                 logger.info(f"Connector {connector_id} is syncing. Waiting {poll_interval} seconds...")
                 time.sleep(poll_interval)
                 continue
-                
-            if status == "SYNC_SUCCEEDED":
+            
+            # In Fivetran API, 'scheduled' state typically means the sync has completed successfully
+            # and is now scheduled for the next run
+            if status in ["SYNC_SUCCEEDED", "SCHEDULED"]:
                 logger.info(f"Connector {connector_id} sync completed successfully.")
                 return True
                 
