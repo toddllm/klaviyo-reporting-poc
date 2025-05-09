@@ -20,7 +20,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Default values
-DEFAULT_TABLE = "klaviyo_campaigns"
+DEFAULT_TABLE = "campaign"  # Changed from 'klaviyo_campaigns' to match actual Fivetran table name
 DEFAULT_DATE_COLUMN = "created_at"
 DEFAULT_LIMIT = 5
 DEFAULT_OUTPUT_DIR = "data"
@@ -44,7 +44,7 @@ def generate_mock_data(start_date=None, end_date=None, num_records=10):
         date_range = 1
     
     # Campaign mock data
-    if DEFAULT_TABLE == "klaviyo_campaigns" or "campaign" in DEFAULT_TABLE:
+    if DEFAULT_TABLE == "campaign" or "campaign" in DEFAULT_TABLE:
         return generate_mock_campaigns(start, end, num_records)
     
     # Event mock data

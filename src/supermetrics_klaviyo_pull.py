@@ -12,8 +12,8 @@ import requests
 SUPERMETRICS_API_ENDPOINT = "https://api.supermetrics.com/enterprise/v2/query/data/json"
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 REPORT_TYPE_MAP = {
-    "campaign": "klaviyo_campaigns",
-    "events": "klaviyo_email_events"
+    "campaign": "campaign",  # Updated to match actual Fivetran table name
+    "events": "event"       # Updated to match actual Fivetran table name
 }
 
 # Configuration

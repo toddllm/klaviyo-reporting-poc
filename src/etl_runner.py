@@ -94,8 +94,8 @@ def extract_fivetran(start_date: str, end_date: str, group_id: Optional[str] = N
     if not group_id or not connector_id:
         raise ValueError("Fivetran group ID and connector ID must be provided via environment variables or parameters")
     
-    # Get table name from env var or parameter, default to klaviyo_campaigns
-    table = table or os.environ.get("FIVETRAN_TABLE", "klaviyo_campaigns")
+    # Get table name from env var or parameter, default to campaign (actual Fivetran table name)
+    table = table or os.environ.get("FIVETRAN_TABLE", "campaign")
     
     # Step 1: Trigger Fivetran sync
     print(f"Triggering Fivetran sync for connector {connector_id} in group {group_id}...")
