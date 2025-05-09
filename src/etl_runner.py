@@ -7,14 +7,27 @@ import time
 import sys
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
+from pathlib import Path
 
-# Import from other modules
-from src.klaviyo_api_ingest import fetch_all_campaigns, fetch_campaign_metrics
-from src.lookml_field_mapper import normalize_records
-from src.s3_uploader import upload_file
-from src.utils.s3_uploader import upload_csv_to_s3
-from src.fivetran_connector_runner import run_connector
-from src.postgres_extract_export import fetch_to_dataframe, fetch_and_export_to_csv
+# Add project root to sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+# Import from other modules using relative imports to avoid circular dependencies
+try:
+    from .klaviyo_api_ingest import fetch_all_campaigns, fetch_campaign_metrics
+    from .lookml_field_mapper import normalize_records
+    from .s3_uploader import upload_file
+    from .utils.s3_uploader import upload_csv_to_s3
+    from .fivetran_connector_runner import run_connector
+    from .postgres_extract_export import fetch_to_dataframe, fetch_and_export_to_csv
+except ImportError:
+    # Fallback for direct script execution
+    from klaviyo_api_ingest import fetch_all_campaigns, fetch_campaign_metrics
+    from lookml_field_mapper import normalize_records
+    from s3_uploader import upload_file
+    from utils.s3_uploader import upload_csv_to_s3
+    from fivetran_connector_runner import run_connector
+    from postgres_extract_export import fetch_to_dataframe, fetch_and_export_to_csv
 
 # Constants
 DEFAULT_OUTPUT_DIR = "data"
@@ -361,4 +374,6 @@ def main(argv=None):
     return 0 if success else 1
 
 if __name__ == "__main__":
-    main()
+    success = main()
+    import sys
+    sys.exit(0 if success else 1)

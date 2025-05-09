@@ -132,21 +132,32 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate dates
+# Function to validate date format (YYYY-MM-DD)
 validate_date() {
     local date_str=$1
-    # Extract year, month, and day
-    local year=$(echo "$date_str" | cut -d'-' -f1)
-    local month=$(echo "$date_str" | cut -d'-' -f2)
-    local day=$(echo "$date_str" | cut -d'-' -f3)
-    
-    # Check if the format is correct
-    if [[ ! "$date_str" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+    # Check if the string matches YYYY-MM-DD format with a regex
+    if [[ ! $date_str =~ ^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$ ]]; then
         return 1
     fi
     
-    # Check if month and day are valid
-    if [[ "$month" -lt 1 || "$month" -gt 12 || "$day" -lt 1 || "$day" -gt 31 ]]; then
+    # Extract year, month, and day
+    local year=${date_str:0:4}
+    local month=${date_str:5:2}
+    local day=${date_str:8:2}
+    
+    # Check if the date is valid
+    # Use 10# prefix to ensure base 10 parsing of numbers with leading zeros
+    if [[ 10#$month -lt 1 || 10#$month -gt 12 || 10#$day -lt 1 || 10#$day -gt 31 ]]; then
+        return 1
+    fi
+    
+    # Additional validation for months with less than 31 days
+    if [[ (10#$month -eq 4 || 10#$month -eq 6 || 10#$month -eq 9 || 10#$month -eq 11) && 10#$day -gt 30 ]]; then
+        return 1
+    fi
+    
+    # February validation (not accounting for leap years)
+    if [[ 10#$month -eq 2 && 10#$day -gt 29 ]]; then
         return 1
     fi
     
@@ -173,19 +184,24 @@ else
     log "Warning: .env file not found. Make sure all required environment variables are set."
 fi
 
-# Check for required environment variables
-required_vars=("FIVETRAN_GROUP_ID" "FIVETRAN_CONNECTOR_ID" \
-               "PG_HOST" "PG_PORT" "PG_DB" "PG_USER" "PG_PASSWORD" \
-               "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_REGION" \
-               "S3_BUCKET" "S3_PREFIX" "SES_FROM_EMAIL" \
-               "BQ_PROJECT" "BQ_DATASET")
+# Skip environment validation in dry-run
+if [ "$DRY_RUN" = true ]; then
+    log "Dry run mode: skipping environment variable validation"
+else
+    # Check for required environment variables
+    required_vars=("FIVETRAN_GROUP_ID" "FIVETRAN_CONNECTOR_ID" \
+                   "PG_HOST" "PG_PORT" "PG_DB" "PG_USER" "PG_PASSWORD" \
+                   "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_REGION" \
+                   "S3_BUCKET" "S3_PREFIX" "SES_FROM_EMAIL" \
+                   "BQ_PROJECT" "BQ_DATASET")
 
-for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-        log "Error: Required environment variable $var is not set."
-        exit 1
-    fi
-done
+    for var in "${required_vars[@]}"; do
+        if [ -z "${!var}" ]; then
+            log "Error: Required environment variable $var is not set."
+            exit 1
+        fi
+    done
+fi
 
 # Check for Fivetran authentication credentials
 if [ -z "$FIVETRAN_API_KEY" ] && [ -z "$FIVETRAN_API_SECRET" ] && \
@@ -213,101 +229,68 @@ log "  End Date: $END_DATE"
 log "  Report Type: $REPORT_TYPE"
 log "  Dry Run: $DRY_RUN"
 
-# Step 1: Trigger Fivetran sync and poll until completion
+# Display informational message about Fivetran sync
 if [ "$SKIP_FIVETRAN" = false ]; then
-    log "Step 1: Triggering Fivetran sync"
-    
+    log "Info: Fivetran sync will be performed and may take up to $MAX_FIVETRAN_WAIT_MINUTES minutes"
+    # No confirmation required anymore with fixed Fivetran API client
+fi
+
+log "  Dry Run: $DRY_RUN"
+
+# Step 2: Trigger Fivetran sync and poll until completion
+if [ "$SKIP_FIVETRAN" = false ]; then
+    log "Step 1: Triggering and waiting for Fivetran sync"
     if [ "$DRY_RUN" = true ]; then
-        log "[DRY RUN] Would trigger Fivetran sync for connector $FIVETRAN_CONNECTOR_ID in group $FIVETRAN_GROUP_ID"
-        log "[DRY RUN] Would poll connector status for up to $MAX_FIVETRAN_WAIT_MINUTES minutes"
+        log "[DRY RUN] Would trigger and wait for Fivetran sync for connector $FIVETRAN_CONNECTOR_ID"
     else
-        log "Triggering Fivetran connector sync"
-        
-        # Trigger the sync
-        python -m src.fivetran_api_client --trigger-sync --group "$FIVETRAN_GROUP_ID" --connector "$FIVETRAN_CONNECTOR_ID"
-        
+        python -m src.fivetran_api_client --trigger-sync "$FIVETRAN_CONNECTOR_ID" --wait --timeout $((MAX_FIVETRAN_WAIT_MINUTES*60)) --poll-interval 30
         if [ $? -ne 0 ]; then
-            log "❌ Error: Failed to trigger Fivetran sync"
+            log " Error: Fivetran sync failed or timed out"
             exit 1
         fi
-        
-        log "✅ Fivetran sync triggered successfully"
-        log "Polling connector status until completion (max $MAX_FIVETRAN_WAIT_MINUTES minutes)..."
-        
-        # Poll for completion
-        POLL_INTERVAL=30  # seconds
-        MAX_ATTEMPTS=$((MAX_FIVETRAN_WAIT_MINUTES * 60 / POLL_INTERVAL))
-        ATTEMPTS=0
-        SYNC_COMPLETED=false
-        
-        while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
-            STATUS=$(python -m src.fivetran_api_client --get-status --group "$FIVETRAN_GROUP_ID" --connector "$FIVETRAN_CONNECTOR_ID" --quiet)
-            
-            if [ "$STATUS" = "COMPLETED" ] || [ "$STATUS" = "SUCCESS" ]; then
-                SYNC_COMPLETED=true
-                break
-            elif [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "ERROR" ]; then
-                log "❌ Error: Fivetran sync failed with status: $STATUS"
-                exit 1
-            fi
-            
-            ATTEMPTS=$((ATTEMPTS + 1))
-            ELAPSED_TIME=$((ATTEMPTS * POLL_INTERVAL / 60))
-            log "Sync in progress... (${ELAPSED_TIME}/${MAX_FIVETRAN_WAIT_MINUTES} minutes elapsed)"
-            sleep $POLL_INTERVAL
-        done
-        
-        if [ "$SYNC_COMPLETED" = true ]; then
-            log "✅ Fivetran sync completed successfully"
-        else
-            log "❌ Error: Fivetran sync timed out after $MAX_FIVETRAN_WAIT_MINUTES minutes"
-            exit 1
-        fi
+        log " Fivetran sync completed successfully"
     fi
 else
     log "Skipping Fivetran sync as requested"
 fi
 
-# Step 2: Run ETL process (extract from Postgres, transform, and load to CSV)
-log "Step 2: Running ETL process"
-
+# Step 2: Run ETL process (extract from Fivetran, transform, and load to CSV)
+log "Step 2: Running ETL process using source Fivetran"
 ETL_CMD="python -m src.etl_runner --source fivetran --start $START_DATE --end $END_DATE --output $PROCESSED_CSV"
-
 if [ "$DRY_RUN" = true ]; then
-    ETL_CMD="$ETL_CMD --dry-run"
-    log "[DRY RUN] Would run ETL process: $ETL_CMD"
+  ETL_CMD="$ETL_CMD --dry-run"
+  log "[DRY RUN] Would run ETL process: $ETL_CMD"
 else
-    log "Running ETL process: $ETL_CMD"
-    eval $ETL_CMD
-    
-    if [ $? -ne 0 ]; then
-        log "Error: ETL process failed"
-        exit 1
-    fi
-    
-    log "ETL process completed successfully"
-    log "Processed data saved to $PROCESSED_CSV"
+  log "Running ETL process: $ETL_CMD"
+  eval $ETL_CMD
+  
+  if [ $? -ne 0 ]; then
+    log "Error: ETL process failed"
+    exit 1
+  fi
+  
+  log "ETL process completed successfully"
+  log "Processed data saved to $PROCESSED_CSV"
 fi
 
 # Step 3: Upload to S3
 log "Step 3: Uploading processed data to S3"
-
-S3_CMD="python -m src.etl_runner --source fivetran --start $START_DATE --end $END_DATE --output $PROCESSED_CSV --upload-s3 $S3_URI"
+S3_CMD="python -m src.etl_runner --source fivetran --start $START_DATE --end $END_DATE --output $PROCESSED_CSV --upload-to-s3 $S3_URI"
 
 if [ "$DRY_RUN" = true ]; then
-    S3_CMD="$S3_CMD --dry-run"
-    log "[DRY RUN] Would upload to S3: $S3_CMD"
+  S3_CMD="$S3_CMD --dry-run"
+  log "[DRY RUN] Would upload to S3: $S3_CMD"
 else
-    log "Uploading to S3: $S3_CMD"
-    eval $S3_CMD
-    
-    if [ $? -ne 0 ]; then
-        log "Error: S3 upload failed"
-        exit 1
-    fi
-    
-    log "S3 upload completed successfully"
-    log "Data uploaded to $S3_URI"
+  log "Uploading to S3: $S3_CMD"
+  eval $S3_CMD
+  
+  if [ $? -ne 0 ]; then
+    log "Error: S3 upload failed"
+    exit 1
+  fi
+  
+  log "S3 upload completed successfully"
+  log "Data uploaded to $S3_URI"
 fi
 
 # Step 4: Load to BigQuery
@@ -332,11 +315,11 @@ if [ "$SKIP_BIGQUERY" = false ]; then
         eval $BQ_CMD
         
         if [ $? -ne 0 ]; then
-            log "❌ Error: BigQuery load failed"
+            log " Error: BigQuery load failed"
             exit 1
         fi
         
-        log "✅ BigQuery load completed successfully"
+        log " BigQuery load completed successfully"
         
         # Run BigQuery sanity check after successful load
         log "Running BigQuery sanity check"
@@ -348,11 +331,11 @@ if [ "$SKIP_BIGQUERY" = false ]; then
         eval $SANITY_CMD
         
         if [ $? -ne 0 ]; then
-            log "❌ Error: BigQuery sanity check failed. Some tables may be missing or empty."
+            log " Error: BigQuery sanity check failed. Some tables may be missing or empty."
             exit 1
         fi
         
-        log "✅ BigQuery sanity check completed successfully"
+        log " BigQuery sanity check completed successfully"
     fi
 else
     log "Skipping BigQuery load as requested"
@@ -376,11 +359,11 @@ if [ "$SKIP_REPORTING_VIEW" = false ]; then
         "$SCRIPT_DIR/deploy_reporting_view.sh"
         
         if [ $? -ne 0 ]; then
-            log "❌ Error: Failed to deploy BigQuery reporting view"
+            log " Error: Failed to deploy BigQuery reporting view"
             exit 1
         fi
         
-        log "✅ BigQuery reporting view deployed successfully"
+        log " BigQuery reporting view deployed successfully"
     fi
 else
     log "Skipping BigQuery reporting view deployment as requested"
@@ -466,7 +449,7 @@ if [ "$SKIP_EMAIL" = false ] && [ -n "$NOTIFY_EMAIL" ]; then
     EMAIL_BODY+="Steps Completed:\n"
     EMAIL_BODY+="1. Fivetran sync: ${SKIP_FIVETRAN:-Completed}\n"
     EMAIL_BODY+="2. ETL process: Completed\n"
-    EMAIL_BODY+="3. S3 upload: Completed ($S3_URI)\n"
+    EMAIL_BODY+="3. S3 upload: Completed\n"
     EMAIL_BODY+="4. BigQuery load: ${SKIP_BIGQUERY:-Completed}\n"
     EMAIL_BODY+="5. Reporting view: ${SKIP_REPORTING_VIEW:-Deployed}\n"
     EMAIL_BODY+="6. Looker refresh: ${LOOKER_REFRESH_STATUS:-Completed}\n"
@@ -508,40 +491,41 @@ log "  Google Sheets: ${SHEETS_URL:-"Not exported"}"
 log "  Log File: $LOG_FILE"
 
 # Define status indicators
-FIVETRAN_STATUS="✅ Fivetran sync"
+FIVETRAN_STATUS=" Fivetran sync"
 if [ "$SKIP_FIVETRAN" = true ]; then
-    FIVETRAN_STATUS="⏩ Fivetran sync (skipped)"
+    FIVETRAN_STATUS=" Fivetran sync (skipped)"
 fi
 
-ETL_STATUS="✅ ETL process"
-S3_STATUS="✅ S3 upload"
+ETL_STATUS=" ETL process"
 
-BQ_STATUS="✅ BigQuery load"
+S3_STATUS=" S3 upload"
+
+BQ_STATUS=" BigQuery load"
 if [ "$SKIP_BIGQUERY" = true ]; then
-    BQ_STATUS="⏩ BigQuery load (skipped)"
+    BQ_STATUS=" BigQuery load (skipped)"
 fi
 
-VIEW_STATUS="✅ Reporting view"
+VIEW_STATUS=" Reporting view"
 if [ "$SKIP_REPORTING_VIEW" = true ]; then
-    VIEW_STATUS="⏩ Reporting view (skipped)"
+    VIEW_STATUS=" Reporting view (skipped)"
 fi
 
-LOOKER_STATUS="✅ Looker refresh"
+LOOKER_STATUS=" Looker refresh"
 if [ "$SKIP_LOOKER_REFRESH" = true ]; then
-    LOOKER_STATUS="⏩ Looker refresh (skipped)"
+    LOOKER_STATUS=" Looker refresh (skipped)"
 elif [ "$LOOKER_REFRESH_STATUS" = "failed" ]; then
-    LOOKER_STATUS="❌ Looker refresh (failed)"
+    LOOKER_STATUS=" Looker refresh (failed)"
 fi
 
-SHEETS_STATUS="✅ Sheets export"
+SHEETS_STATUS=" Sheets export"
 if [ "$SKIP_SHEETS" = true ]; then
-    SHEETS_STATUS="⏩ Sheets export (skipped)"
+    SHEETS_STATUS=" Sheets export (skipped)"
 elif [ "$SHEETS_URL" = "N/A (export failed)" ]; then
-    SHEETS_STATUS="❌ Sheets export (failed)"
+    SHEETS_STATUS=" Sheets export (failed)"
 fi
 
 echo ""
-echo "✅ End-to-End Demo Completed Successfully"
+echo " End-to-End Demo Completed Successfully"
 echo "----------------------------------"
 echo "$FIVETRAN_STATUS"
 echo "$ETL_STATUS"
@@ -551,10 +535,10 @@ echo "$VIEW_STATUS"
 echo "$LOOKER_STATUS"
 echo "$SHEETS_STATUS"
 echo "----------------------------------"
-echo "📊 Dashboard Link: $DASHBOARD_LINK"
+echo " Dashboard Link: $DASHBOARD_LINK"
 if [ "$SKIP_SHEETS" = false ] && [ -n "$SHEETS_URL" ] && [ "$SHEETS_URL" != "N/A (skipped)" ] && [ "$SHEETS_URL" != "N/A (export failed)" ]; then
-    echo "📝 Google Sheets: $SHEETS_URL"
+    echo " Google Sheets: $SHEETS_URL"
 fi
-echo "📋 For more details, check the log file: $LOG_FILE"
+echo " For more details, check the log file: $LOG_FILE"
 
 exit 0

@@ -82,7 +82,10 @@ To skip specific steps in the pipeline:
 ```bash
 # Skip Fivetran sync (use existing data in Postgres)
 ./scripts/run_end_to_end_demo.sh --skip-fivetran
+```
++**Note:** The script now prompts before triggering a Fivetran sync. Respond 'n' to that prompt to skip the sync step interactively.
 
+```bash
 # Skip BigQuery load (just extract and upload to S3)
 ./scripts/run_end_to_end_demo.sh --skip-bigquery
 
@@ -201,6 +204,109 @@ You can also deploy the demo as an AWS Lambda function with a CloudWatch Events 
 1. Package the demo code and dependencies
 2. Create a Lambda function that calls the demo script
 3. Set up a CloudWatch Events rule to trigger the Lambda function on a schedule
+
+## Fivetran System Key Configuration
+
+Below is a sample configuration snippet required for the Fivetran system key:
+
+```json
+[
+  {
+    "resource_type": "DESTINATION",
+    "access_level": "READ"
+  },
+  {
+    "resource_type": "CONNECTOR",
+    "access_level": "MANAGE"
+  }
+]
+```
+
+## Retrieving Fivetran Group and Connector IDs via API
+
+To programmatically retrieve your Fivetran Group ID and Connector ID using your Fivetran System Key and Secret, you can use the following curl commands:
+
+1. **List Fivetran Groups:**
+```bash
+curl -u <FIVETRAN_SYSTEM_KEY>:<FIVETRAN_SECRET> https://api.fivetran.com/v1/groups
+```
+- This command returns a list of groups associated with your Fivetran account. Note the `id` field for the relevant group.
+
+2. **List Connectors for a Group:**
+```bash
+curl -u <FIVETRAN_SYSTEM_KEY>:<FIVETRAN_SECRET> https://api.fivetran.com/v1/groups/<GROUP_ID>/connectors
+```
+- Replace `<GROUP_ID>` with the value from the previous step. This returns all connectors in the group. Note the `id` for the connector you want to use.
+
+These IDs are required for your environment configuration. Store them in your `.env` or `tempenv` file as `FIVETRAN_GROUP_ID` and `FIVETRAN_CONNECTOR_ID` respectively.
+
+## Environment Variable & Secrets Management
+
+Below is a summary of the key environment variables used for the end-to-end demo, which ones are secrets, and how they are managed:
+
+| Variable                   | Description/Source                                 | Secret?  | Where Managed          |
+|----------------------------|----------------------------------------------------|----------|------------------------|
+| BQ_PROJECT                 | Google BigQuery Project ID                         | No       | .env/tempenv           |
+| BQ_DATASET                 | BigQuery dataset name                              | No       | .env/tempenv           |
+| BQ_TABLE_CAMPAIGNS         | BigQuery table for campaigns                       | No       | .env/tempenv           |
+| BQ_TABLE_EVENTS            | BigQuery table for events                          | No       | .env/tempenv           |
+| FIVETRAN_SYSTEM_KEY        | Fivetran API Key                                   | Yes      | AWS Secrets Manager    |
+| FIVETRAN_SECRET            | Fivetran API Secret                                | Yes      | AWS Secrets Manager    |
+| FIVETRAN_GROUP_ID          | Fivetran group ID                                  | No       | .env/tempenv           |
+| FIVETRAN_CONNECTOR_ID      | Fivetran connector ID                              | No       | .env/tempenv           |
+| GOOGLE_SHEET_ID            | Google Sheet ID                                    | No       | .env/tempenv           |
+| GOOGLE_SHEET_NAME          | Sheet/tab name in Google Sheet                     | No       | .env/tempenv           |
+| GOOGLE_SHEET_RANGE_NAME    | Named range for metrics data                       | No       | .env/tempenv           |
+| GOOGLE_APPLICATION_CREDENTIALS | Path to Google service account JSON             | Yes*     | .env/tempenv           |
+| LOOKER_SA_EMAIL            | Looker Studio service account email                | No       | .env/tempenv           |
+| LOOKER_DASHBOARD_URL       | Looker Studio dashboard link                       | No       | .env/tempenv           |
+| AWS_ACCESS_KEY_ID          | AWS Access Key                                     | Yes*     | .env/tempenv or SecretsManager |
+| AWS_SECRET_ACCESS_KEY      | AWS Secret Key                                     | Yes*     | .env/tempenv or SecretsManager |
+| AWS_REGION                 | AWS region                                         | No       | .env/tempenv           |
+| S3_BUCKET                  | S3 bucket for data                                 | No       | .env/tempenv           |
+| SES_DOMAIN                 | SES verified domain                                | No       | .env/tempenv           |
+| SES_SENDER_EMAIL           | SES sender email                                   | No       | .env/tempenv           |
+| KLAVIYO_API_KEY            | Klaviyo API Key                                    | Yes      | AWS Secrets Manager    |
+
+*Secrets should be rotated regularly. To update a secret in AWS Secrets Manager, use:
+```bash
+aws secretsmanager update-secret --secret-id <SECRET_NAME> --secret-string '<NEW_VALUE>'
+```
+After rotating a secret, update your running environment or redeploy as needed.
+
+Non-secret config values can be edited directly in your env file.
+
+---
+
+## SES Receiving & Demo Email Simulation
+
+As part of the end-to-end demo, we set up Amazon SES to receive emails for your domain and store them in S3. This enables you to:
+- Complete SES sender email verification even without a traditional mailbox.
+- Simulate email campaign click-throughs by extracting and visiting links from received emails.
+
+### Steps Performed
+1. **SES/S3 Setup Script**: Run `setup_ses_receiving.py` to:
+    - Create an S3 bucket (if not exists) for storing incoming emails.
+    - Attach a bucket policy allowing SES to write emails to the bucket.
+    - Create and activate an SES receipt rule to deliver emails sent to your SES sender address (e.g., `reports@yourdomain.com`) into the S3 bucket under `ses-emails/`.
+    - Print the required MX record for DNS.
+
+2. **DNS Configuration**: Add the following MX record to your DNS provider for `yourdomain.com`:
+    ```
+    yourdomain.com.    10    inbound-smtp.us-east-1.amazonaws.com
+    ```
+    This allows SES to receive mail for your domain.
+
+3. **Email Verification & Demo Simulation**:
+    - Once DNS propagates, any email sent to `reports@yourdomain.com` will be delivered to your S3 bucket.
+    - Download the `.eml` file from the S3 bucket (`ses-emails/` prefix).
+    - Open the file in a mail client or text editor, extract any verification or campaign links, and visit them in your browser to simulate a user click (CTR).
+
+4. **Manual Steps**:
+    - Wait for DNS propagation after updating your MX record (may take up to a few hours).
+    - Manually retrieve and process emails from S3 as needed for verification or demo purposes.
+
+---
 
 ## Conclusion
 
