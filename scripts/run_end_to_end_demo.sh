@@ -254,9 +254,9 @@ else
     log "Skipping Fivetran sync as requested"
 fi
 
-# Step 2: Run ETL process (extract from Postgres, transform, and load to CSV)
-log "Step 2: Running ETL process using source Postgres"
-ETL_CMD="python -m src.etl_runner --source Postgres --start $START_DATE --end $END_DATE --output $PROCESSED_CSV"
+# Step 2: Run ETL process (extract from Fivetran, transform, and load to CSV)
+log "Step 2: Running ETL process using source Fivetran"
+ETL_CMD="python -m src.etl_runner --source fivetran --start $START_DATE --end $END_DATE --output $PROCESSED_CSV"
 if [ "$DRY_RUN" = true ]; then
   ETL_CMD="$ETL_CMD --dry-run"
   log "[DRY RUN] Would run ETL process: $ETL_CMD"
@@ -275,7 +275,7 @@ fi
 
 # Step 3: Upload to S3
 log "Step 3: Uploading processed data to S3"
-S3_CMD="python -m src.etl_runner --source Postgres --start $START_DATE --end $END_DATE --output $PROCESSED_CSV --upload-to-s3 $S3_URI"
+S3_CMD="python -m src.etl_runner --source fivetran --start $START_DATE --end $END_DATE --output $PROCESSED_CSV --upload-to-s3 $S3_URI"
 
 if [ "$DRY_RUN" = true ]; then
   S3_CMD="$S3_CMD --dry-run"
