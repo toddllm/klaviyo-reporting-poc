@@ -1,0 +1,21 @@
+FROM apache/superset:latest
+
+USER root
+# Add startup script
+COPY superset_startup.sh /app/
+RUN chmod +x /app/superset_startup.sh
+
+# Switch back to superset user
+USER superset
+
+# Set environment variables
+ENV SUPERSET_SECRET_KEY="your-secret-key-here-please-change-in-production"
+ENV FEATURE_FLAGS='{"EMBEDDED_SUPERSET": true}'
+ENV SQLALCHEMY_DATABASE_URI="sqlite:////var/lib/superset/superset.db"
+ENV FLASK_APP="superset.app:create_app()"
+ENV FLASK_ENV="production"
+ENV PYTHONPATH="/app/pythonpath"
+ENV PORT="8080"
+
+# Change default command to use our startup script
+CMD ["/app/superset_startup.sh"]
